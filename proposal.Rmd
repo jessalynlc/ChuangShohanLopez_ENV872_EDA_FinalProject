@@ -11,6 +11,8 @@ library(tidyverse);library(lubridate);library(here)
 library(sf)
 library(leaflet)
 library(mapview)
+library(rvest)
+library(dataRetrieval)
 
 here()
 ```
@@ -19,7 +21,10 @@ here()
 
 ```{r PM2.5 visualization}
 
-pm2.5 <- read_csv(here('Data/Raw/EPAair_PM25_NC2018_raw.csv')) %>% 
+pm2.5 <- read_csv(here('Data/Raw/EPAair_PM25_NC2018_raw.csv')) 
+ozone <- read_csv(here('Data/Raw/EPAair_O3_NC2018_raw.csv')) 
+
+pm2.5_sf <- pm2.5 %>% 
   group_by(`Site Name`, COUNTY, SITE_LATITUDE, SITE_LONGITUDE) %>% 
   summarize(
     meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
@@ -27,8 +32,9 @@ pm2.5 <- read_csv(here('Data/Raw/EPAair_PM25_NC2018_raw.csv')) %>%
     ) %>% 
   st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'), crs=4269)
 
-mapview(pm2.5, zcol = 'meanPM')
+mapview(pm2.5_sf, zcol = 'meanPM')
 
+#finding the two-year average in order to do analysis with EJ data
 
 ```
 
@@ -64,4 +70,25 @@ cluster_map <- leaflet(powerplants) %>%
  )
 
 cluster_map
+```
+
+```{r wrangling CDC data}
+library(sf)
+
+#wrangling 2014 data because 2014 gdb import does not work
+#SVI2014_csv <- read_csv(here('Data/Project_Data/NorthCarolina_county_2014.csv'))
+#NC_counties <- st_read(here('Data/Spatial/cb_2018_us_county_20m.shp')) %>% 
+#  filter(STATEFP == 37) %>% 
+#  rename(COUNTY = NAME)
+#SVI2014_spatial <- left_join(SVI2014_csv, NC_counties,by = "COUNTY")
+#SVI2014_sf <- SVI2014_spatial %>% 
+#  st_as_sf(crs=)
+
+SVI2016_gdb <- st_read(here('Data/Project_Data/SVI2016_NORTHCAROLINA_COUNTY.gdb'))
+SVI2018_gdb <- st_read(here('Data/Project_Data/SVI2018_NORTHCAROLINA_COUNTY.gdb'))
+SVI2020_gdb <- st_read(here('Data/Project_Data/SVI2020_NORTHCAROLINA_COUNTY.gdb'))
+SVI2022_gdb <- st_read(here('Data/Project_Data/SVI2022_NORTHCAROLINA_COUNTY.gdb'))
+
+mapview(SVI2018_gdb, zcol = "RPL_THEME1") + mapview(powerplants, col.regions = "black") + mapview(pm2.5_sf, zcol = "meanPM", cex = "meanPM")
+
 ```
