@@ -1,0 +1,67 @@
+---
+title: "test"
+output: html_document
+date: "2024-11-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#hello
+library(tidyverse);library(lubridate);library(here)
+library(sf)
+library(leaflet)
+library(mapview)
+
+here()
+```
+
+## R Markdown
+
+```{r PM2.5 visualization}
+
+pm2.5 <- read_csv(here('Data/Raw/EPAair_PM25_NC2018_raw.csv')) %>% 
+  group_by(`Site Name`, COUNTY, SITE_LATITUDE, SITE_LONGITUDE) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'), crs=4269)
+
+mapview(pm2.5, zcol = 'meanPM')
+
+
+```
+
+Powerplant data Navigate to <https://www.nconemap.gov/> - NC's home for spatial data
+
+```{r gas plants}
+data_source <- paste0(
+  'https://services.nconemap.gov/secure/rest/services/',
+  'NC1Map_Hazardous_Waste/MapServer/4/',
+  'query?outFields=*&where=1%3D1&f=geojson') #paste0 concantates strings for knit
+
+gas_plants <- st_read(data_source)
+
+mapview(gas_plants)
+
+```
+
+```{r read in powerplant data}
+powerplants <- st_read('https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/Plants_gdb/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson') %>% #mapview()
+ filter(STATE == 'NC') %>%
+ filter(TYPE != 'SOLAR PHOTOVOLTAIC') %>% 
+ filter(TYPE!='CONVENTIONAL HYDROELECTRIC') %>%
+ filter(TYPE!= 'BATTERIES; SOLAR PHOTOVOLTAIC')
+```
+
+```{r map power plant data}
+#Create the map
+cluster_map <- leaflet(powerplants) %>% 
+ addTiles() %>% 
+ addMarkers(
+ #clusterOptions = markerClusterOptions(),
+ popup = ~PRIM_FUEL
+ )
+
+cluster_map
+```
