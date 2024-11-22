@@ -84,11 +84,14 @@ library(sf)
 #SVI2014_sf <- SVI2014_spatial %>% 
 #  st_as_sf(crs=)
 
+SVI2014_gdb <- st_read(here('Data/Project_Data/SVI2014_NORTHCAROLINA_COUNTY.gdb'))
 SVI2016_gdb <- st_read(here('Data/Project_Data/SVI2016_NORTHCAROLINA_COUNTY.gdb'))
 SVI2018_gdb <- st_read(here('Data/Project_Data/SVI2018_NORTHCAROLINA_COUNTY.gdb'))
 SVI2020_gdb <- st_read(here('Data/Project_Data/SVI2020_NORTHCAROLINA_COUNTY.gdb'))
 SVI2022_gdb <- st_read(here('Data/Project_Data/SVI2022_NORTHCAROLINA_COUNTY.gdb'))
 
-mapview(SVI2018_gdb, zcol = "RPL_THEME1") + mapview(powerplants, col.regions = "black") + mapview(pm2.5_sf, zcol = "meanPM", cex = "meanPM")
+mapview(SVI2014_gdb)
+
+mapview(SVI2018_gdb, zcol = "RPL_THEME1") + mapview(powerplants, col.regions = "black") + mapview(pm2.5_sf, cex = "meanPM")
 
 ```
