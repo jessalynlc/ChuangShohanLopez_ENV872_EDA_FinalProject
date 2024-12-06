@@ -76,22 +76,73 @@ cluster_map
 library(sf)
 
 #wrangling 2014 data because 2014 gdb import does not work
-#SVI2014_csv <- read_csv(here('Data/Project_Data/NorthCarolina_county_2014.csv'))
-#NC_counties <- st_read(here('Data/Spatial/cb_2018_us_county_20m.shp')) %>% 
-#  filter(STATEFP == 37) %>% 
-#  rename(COUNTY = NAME)
-#SVI2014_spatial <- left_join(SVI2014_csv, NC_counties,by = "COUNTY")
-#SVI2014_sf <- SVI2014_spatial %>% 
-#  st_as_sf(crs=)
+SVI2014_csv <- read.csv(here('Data/Project_Data/NorthCarolina_county_2014.csv'), 
+                        colClasses = c('FIPS' = 'factor'))
+NC_counties <- st_read(here('Data/Spatial/cb_2018_us_county_20m.shp')) %>% 
+  filter(STATEFP == 37) %>% 
+  rename(COUNTY = NAME)
 
-SVI2014_gdb <- st_read(here('Data/Project_Data/SVI2014_NORTHCAROLINA_COUNTY.gdb'))
+SVI2014_gdb <- NC_counties %>% 
+  left_join(
+    SVI2014_csv, 
+    by = c("GEOID" = "FIPS") 
+    )
+
 SVI2016_gdb <- st_read(here('Data/Project_Data/SVI2016_NORTHCAROLINA_COUNTY.gdb'))
 SVI2018_gdb <- st_read(here('Data/Project_Data/SVI2018_NORTHCAROLINA_COUNTY.gdb'))
 SVI2020_gdb <- st_read(here('Data/Project_Data/SVI2020_NORTHCAROLINA_COUNTY.gdb'))
 SVI2022_gdb <- st_read(here('Data/Project_Data/SVI2022_NORTHCAROLINA_COUNTY.gdb'))
 
-mapview(SVI2014_gdb)
+# Remove spatial information from SVI datasets
+SVI2014_df <- SVI2014_gdb %>% st_drop_geometry() 
+SVI2016_df <- SVI2016_gdb %>% st_drop_geometry()
+SVI2018_df <- SVI2018_gdb %>% st_drop_geometry()
+SVI2020_df <- SVI2020_gdb %>% st_drop_geometry()
+SVI2022_df <- SVI2022_gdb %>% st_drop_geometry() 
 
-mapview(SVI2018_gdb, zcol = "RPL_THEME1") + mapview(powerplants, col.regions = "black") + mapview(pm2.5_sf, cex = "meanPM")
+#Renaming the GEOID column to FIPS to be able to join with other dataframes more 
+#easily
+SVI2014_df <- SVI2014_df %>%
+  rename(FIPS = GEOID)
+
+# Perform the joins on the selected columns for each of the themes to be able to 
+#do GLM analysis for each theme
+theme1 <- SVI2014_df %>%
+  select(FIPS, RPL_THEME1) %>%
+  inner_join(SVI2016_df %>% select(FIPS, RPL_THEME1), by = "FIPS") %>%
+  inner_join(SVI2018_df %>% select(FIPS, RPL_THEME1), by = "FIPS") %>%
+  inner_join(SVI2020_df %>% select(FIPS, RPL_THEME1), by = "FIPS") %>%
+  inner_join(SVI2022_df %>% select(FIPS, RPL_THEME1), by = "FIPS")
+
+colnames(theme1) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
+
+theme2 <- SVI2014_df %>%
+  select(FIPS, RPL_THEME1) %>%
+  inner_join(SVI2016_df %>% select(FIPS, RPL_THEME2), by = "FIPS") %>%
+  inner_join(SVI2018_df %>% select(FIPS, RPL_THEME2), by = "FIPS") %>%
+  inner_join(SVI2020_df %>% select(FIPS, RPL_THEME2), by = "FIPS") %>%
+  inner_join(SVI2022_df %>% select(FIPS, RPL_THEME2), by = "FIPS")
+
+colnames(theme2) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
+
+theme3 <- SVI2014_df %>%
+  select(FIPS, RPL_THEME1) %>%
+  inner_join(SVI2016_df %>% select(FIPS, RPL_THEME3), by = "FIPS") %>%
+  inner_join(SVI2018_df %>% select(FIPS, RPL_THEME3), by = "FIPS") %>%
+  inner_join(SVI2020_df %>% select(FIPS, RPL_THEME3), by = "FIPS") %>%
+  inner_join(SVI2022_df %>% select(FIPS, RPL_THEME3), by = "FIPS")
+
+colnames(theme3) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
+
+theme4 <- SVI2014_df %>%
+  select(FIPS, RPL_THEME1) %>%
+  inner_join(SVI2016_df %>% select(FIPS, RPL_THEME4), by = "FIPS") %>%
+  inner_join(SVI2018_df %>% select(FIPS, RPL_THEME4), by = "FIPS") %>%
+  inner_join(SVI2020_df %>% select(FIPS, RPL_THEME4), by = "FIPS") %>%
+  inner_join(SVI2022_df %>% select(FIPS, RPL_THEME4), by = "FIPS")
+
+colnames(theme4) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
+
+#mapview(SVI2018_gdb, zcol = "RPL_THEME1") + mapview(powerplants, col.regions = "black") + mapview(pm2.5_sf, cex = "meanPM")
 
 ```
