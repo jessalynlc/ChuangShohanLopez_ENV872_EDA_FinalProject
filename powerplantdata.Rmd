@@ -3,6 +3,8 @@ title: "Powerplantdata"
 author: "Lauren Shohan"
 date: "2024-11-11"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, warning=F, error=F}
