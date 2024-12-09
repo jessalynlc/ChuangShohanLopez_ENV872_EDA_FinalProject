@@ -140,8 +140,8 @@ retired_plants <- retired_plants %>%
 
 # Perform the join, one plant ENKA is missing retirement year!
 retired_plants <- retired_plants %>%
-  left_join(retirement_year, by = c("PLANT_CODE" = "Plant.ID")) %>% 
-  filter(Retirement.Year >= 2013)
+  left_join(retirement_year, by = c("PLANT_CODE" = "Plant.ID")) #%>% 
+  #filter(Retirement.Year >= 2013)
 
 mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
   mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red') +
