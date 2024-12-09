@@ -21,18 +21,122 @@ here()
 
 ```{r PM2.5 visualization}
 
-pm2.5 <- read_csv(here('Data/Raw/EPAair_PM25_NC2018_raw.csv')) 
-ozone <- read_csv(here('Data/Raw/EPAair_O3_NC2018_raw.csv')) 
+#spatial visualization of 2014 PM2.5 data
+pm2.5_2014 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2014.csv')) 
 
-pm2.5_sf <- pm2.5 %>% 
-  group_by(`Site Name`, COUNTY, SITE_LATITUDE, SITE_LONGITUDE) %>% 
+pm2.5_sf_2014 <- pm2.5_2014 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
   summarize(
     meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
     maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
     ) %>% 
-  st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'), crs=4269)
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf, zcol = 'meanPM')
+mapview(pm2.5_sf_2014, zcol = 'meanPM')
+
+#spatial visualization of 2015 PM2.5 data
+pm2.5_2015 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2015.csv')) 
+
+pm2.5_sf_2015 <- pm2.5_2015 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2015, zcol = 'meanPM')
+
+#spatial visualization of 2016 PM2.5 data
+pm2.5_2016 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2016.csv')) 
+
+pm2.5_sf_2016 <- pm2.5_2016 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2016, zcol = 'meanPM')
+
+#spatial visualization of 2022 PM2.5 data
+pm2.5_2017 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2017.csv')) 
+
+pm2.5_sf_2017 <- pm2.5_2017 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2017, zcol = 'meanPM')
+
+#spatial visualization of 2018 PM2.5 data
+pm2.5_2018 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2018.csv')) 
+
+pm2.5_sf_2018 <- pm2.5_2018 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2018, zcol = 'meanPM')
+
+#spatial visualization of 2019 PM2.5 data
+pm2.5_2019 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2019.csv')) 
+
+pm2.5_sf_2019 <- pm2.5_2019 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2019, zcol = 'meanPM')
+
+#spatial visualization of 2020 PM2.5 data
+pm2.5_2020 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2020.csv')) 
+
+pm2.5_sf_2020 <- pm2.5_2020 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2020, zcol = 'meanPM')
+
+#spatial visualization of 2021 PM2.5 data
+pm2.5_2021 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2021.csv')) 
+
+pm2.5_sf_2021 <- pm2.5_2021 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2021, zcol = 'meanPM')
+
+#spatial visualization of 2022 PM2.5 data
+pm2.5_2022 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2022.csv')) 
+
+pm2.5_sf_2022 <- pm2.5_2022 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2022, zcol = 'meanPM')
 
 #finding the two-year average in order to do analysis with EJ data
 
