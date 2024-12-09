@@ -10,14 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse);library(lubridate);library(here)
 library(sf)
 library(leaflet)
+#install.packages("mapview")
 library(mapview)
+library(leafsync) #to display maps next to eachother
 library(rvest)
 library(dataRetrieval)
 
 here()
 ```
-
-## R Markdown
 
 ```{r PM2.5 visualization}
 
@@ -32,7 +32,7 @@ pm2.5_sf_2014 <- pm2.5_2014 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2014, zcol = 'meanPM')
+#mapview(pm2.5_sf_2014, zcol = 'meanPM')
 
 #spatial visualization of 2015 PM2.5 data
 pm2.5_2015 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2015.csv')) 
@@ -45,7 +45,7 @@ pm2.5_sf_2015 <- pm2.5_2015 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2015, zcol = 'meanPM')
+#mapview(pm2.5_sf_2015, zcol = 'meanPM')
 
 #spatial visualization of 2016 PM2.5 data
 pm2.5_2016 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2016.csv')) 
@@ -58,7 +58,7 @@ pm2.5_sf_2016 <- pm2.5_2016 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2016, zcol = 'meanPM')
+#mapview(pm2.5_sf_2016, zcol = 'meanPM')
 
 #spatial visualization of 2022 PM2.5 data
 pm2.5_2017 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2017.csv')) 
@@ -71,7 +71,7 @@ pm2.5_sf_2017 <- pm2.5_2017 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2017, zcol = 'meanPM')
+#mapview(pm2.5_sf_2017, zcol = 'meanPM')
 
 #spatial visualization of 2018 PM2.5 data
 pm2.5_2018 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2018.csv')) 
@@ -84,7 +84,7 @@ pm2.5_sf_2018 <- pm2.5_2018 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2018, zcol = 'meanPM')
+#apview(pm2.5_sf_2018, zcol = 'meanPM')
 
 #spatial visualization of 2019 PM2.5 data
 pm2.5_2019 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2019.csv')) 
@@ -97,7 +97,7 @@ pm2.5_sf_2019 <- pm2.5_2019 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2019, zcol = 'meanPM')
+#mapview(pm2.5_sf_2019, zcol = 'meanPM')
 
 #spatial visualization of 2020 PM2.5 data
 pm2.5_2020 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2020.csv')) 
@@ -110,7 +110,7 @@ pm2.5_sf_2020 <- pm2.5_2020 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2020, zcol = 'meanPM')
+#mapview(pm2.5_sf_2020, zcol = 'meanPM')
 
 #spatial visualization of 2021 PM2.5 data
 pm2.5_2021 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2021.csv')) 
@@ -123,7 +123,7 @@ pm2.5_sf_2021 <- pm2.5_2021 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2021, zcol = 'meanPM')
+#mapview(pm2.5_sf_2021, zcol = 'meanPM')
 
 #spatial visualization of 2022 PM2.5 data
 pm2.5_2022 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2022.csv')) 
@@ -136,7 +136,7 @@ pm2.5_sf_2022 <- pm2.5_2022 %>%
     ) %>% 
   st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
 
-mapview(pm2.5_sf_2022, zcol = 'meanPM')
+#mapview(pm2.5_sf_2022, zcol = 'meanPM')
 
 #finding the two-year average in order to do analysis with EJ data
 
@@ -369,4 +369,125 @@ colnames(theme4) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
 VISUALIZATION
 
 ```{r visualizing data}
+
+counties_view <- mapview(counties_sf, col.region = 'grey')
+
+plants_view <- mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
+  mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red')
+
+#theme 1 visualization
+map_t1_20132014 <- mapview(pm2.5_sf_20132014, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2014_gdb, zcol = "RPL_THEME1", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t1_20152016 <- mapview(pm2.5_sf_20152016, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2016_gdb, zcol = "RPL_THEME1", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t1_20172018 <- mapview(pm2.5_sf_20172018, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2018_gdb, zcol = "RPL_THEME1", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t1_20192020 <- mapview(pm2.5_sf_20192020, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2020_gdb, zcol = "RPL_THEME1", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t1_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2022_gdb, zcol = "RPL_THEME1", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+# Synchronize and display the maps side by side
+sync(map_t1_20132014, map_t1_20152016, map_t1_20172018, map_t1_20192020, map_t1_20212022)
+
+#theme 2 visualization
+map_t2_20132014 <- mapview(pm2.5_sf_20132014, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2014_gdb, zcol = "RPL_THEME2", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t2_20152016 <- mapview(pm2.5_sf_20152016, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2016_gdb, zcol = "RPL_THEME2", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t2_20172018 <- mapview(pm2.5_sf_20172018, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2018_gdb, zcol = "RPL_THEME2", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t2_20192020 <- mapview(pm2.5_sf_20192020, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2020_gdb, zcol = "RPL_THEME2", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t2_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2022_gdb, zcol = "RPL_THEME2", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+# Synchronize and display the maps side by side
+sync(map_t2_20132014, map_t2_20152016, map_t2_20172018, map_t2_20192020, map_t2_20212022)
+
+#theme 3 visualization
+map_t3_20132014 <- mapview(pm2.5_sf_20132014, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2014_gdb, zcol = "RPL_THEME3", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t3_20152016 <- mapview(pm2.5_sf_20152016, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2016_gdb, zcol = "RPL_THEME3", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t3_20172018 <- mapview(pm2.5_sf_20172018, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2018_gdb, zcol = "RPL_THEME3", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t3_20192020 <- mapview(pm2.5_sf_20192020, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2020_gdb, zcol = "RPL_THEME3", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t3_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2022_gdb, zcol = "RPL_THEME3", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+# Synchronize and display the maps side by side
+sync(map_t3_20132014, map_t3_20152016, map_t3_20172018, map_t3_20192020, map_t3_20212022)
+
+#theme 4 visualization
+map_t4_20132014 <- mapview(pm2.5_sf_20132014, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2014_gdb, zcol = "RPL_THEME4", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t4_20152016 <- mapview(pm2.5_sf_20152016, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2016_gdb, zcol = "RPL_THEME4", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t4_20172018 <- mapview(pm2.5_sf_20172018, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2018_gdb, zcol = "RPL_THEME4", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t4_20192020 <- mapview(pm2.5_sf_20192020, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2020_gdb, zcol = "RPL_THEME4", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+map_t4_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+  mapview(SVI2022_gdb, zcol = "RPL_THEME4", 
+          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+  counties_view + plants_view
+
+# Synchronize and display the maps side by side
+sync(map_t4_20132014, map_t4_20152016, map_t4_20172018, map_t4_20192020, map_t4_20212022)
 ```
