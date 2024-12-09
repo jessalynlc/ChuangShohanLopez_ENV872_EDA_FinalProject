@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+output: html_document
+date: "2024-12-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#hello
+library(tidyverse);library(lubridate);library(here)
+library(sf)
+library(leaflet)
+library(mapview)
+library(rvest)
+library(dataRetrieval)
+
+here()
+```
+
+```{r PM2.5 visualization}
+
+pm2.5_2022 <- read_csv(here('Data/EPA_PM2.5/EPA_PM25_NC2022.csv')) 
+
+pm2.5_sf_2022 <- pm2.5_2022 %>% 
+  group_by(`Site ID`, County, `Site Latitude`, `Site Longitude`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    ) %>% 
+  st_as_sf(coords = c('Site Longitude','Site Latitude'), crs=4269)
+
+mapview(pm2.5_sf_2022, zcol = 'meanPM')
+
+#finding the two-year average in order to do analysis with EJ data
+
+```
