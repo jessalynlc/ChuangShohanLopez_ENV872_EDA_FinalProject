@@ -1,3 +1,11 @@
+---
+title: "Project"
+author: "Lauren Shohan, Jessalyn Chuang, Alex López"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
 \newpage
 \tableofcontents 
 \newpage
@@ -10,10 +18,14 @@
 # Set your working directory
 
 # Load your packages
-
+library(tidyverse); library(lubridate); library(sf); library(leaflet)
+library(mapview); library(leafsync); library(rvest); library(dataRetrieval);
+library(here)
+here()
 # Set your ggplot theme
 
 # Load your datasets
+
 
 ```
 
@@ -27,6 +39,15 @@
 # Dataset Information
 
 
+```{r data.summary, echo = FALSE}
+#table that summarizes data structure (variables, units, ranges and/or central
+#tendencies, data source if multiple are used, etc.) - dont include code used 
+#to generate the table
+
+#kable(data, caption = , col.names = c(''), digits = )
+
+
+```
 
 \newpage
 
