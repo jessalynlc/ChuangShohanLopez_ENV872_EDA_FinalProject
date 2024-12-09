@@ -166,38 +166,130 @@ pm2.5_sf_20212022 <- rbind(pm2.5_sf_2021, pm2.5_sf_2022)
 
 ```
 
-Powerplant data Navigate to <https://www.nconemap.gov/> - NC's home for spatial data
+https://www.epa.gov/egrid/code-lookup
 
-```{r gas plants}
-data_source <- paste0(
-  'https://services.nconemap.gov/secure/rest/services/',
-  'NC1Map_Hazardous_Waste/MapServer/4/',
-  'query?outFields=*&where=1%3D1&f=geojson') #paste0 concantates strings for knit
+POWERPLANT Primary Fuel categories:
+BIT - blast furnace gas -> most PM 2.5 producing
 
-gas_plants <- st_read(data_source)
+other PM2.5 producing types: 
+AB - agricultural byproduct
+BLQ - black liqour 
+DFO - distillate fuel oil, light fuel oil, FO2, diesel oil
+LFG - landfill gas
+NG - natural gas
+OBG - other biomass gas (digester gas, methane, and other biomass gases)
+SLW - sludge waste 
+WDS - wood, wood waste solid
+WH - waste heat
 
-mapview(gas_plants)
-
-```
+excluded categories:
+Not Available
+SUN - solar
+WND - wind
+WAT - water
+MWH - electricity 
+NUC - nuclear
 
 ```{r read in powerplant data}
-powerplants <- st_read('https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/Plants_gdb/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson') %>% #mapview()
- filter(STATE == 'NC') %>%
- filter(TYPE != 'SOLAR PHOTOVOLTAIC') %>% 
- filter(TYPE!='CONVENTIONAL HYDROELECTRIC') %>%
- filter(TYPE!= 'BATTERIES; SOLAR PHOTOVOLTAIC')
+#do not think we should filter for this, should only be filtering for primary 
+  #filter(TYPE != 'SOLAR PHOTOVOLTAIC') %>% 
+  #filter(TYPE!='CONVENTIONAL HYDROELECTRIC') %>%
+  #filter(TYPE!= 'BATTERIES; SOLAR PHOTOVOLTAIC') %>%
+  #filter(TYPE!= 'NOT AVAILABLE')
+
+powerplants <- st_read('https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/Plants_gdb/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson') %>%
+  filter(STATE == 'NC')
+
+
+### BIT POWER PLANTS
+  #major producer of PM 2.5 -> 18 BIT power plants in NC! 
+  #combo of three types: 
+     #conventional steam coal, conventional steam coal/natural gas fired 
+     #combustion turbine, and conventional steam coal/petroleum liquids
+
+BITfuelpowerplants <- powerplants %>%
+  filter(PRIM_FUEL == 'BIT')
+
+
+#other relatively high PM 2.5 producing from non-coal options
+  #WDS, SLW, BLQ, AB, DFO
+HighPMfuelpowerplants <- powerplants %>%
+  filter(PRIM_FUEL %in% c('WDS', 'SLW', 'BLQ', 'AB', 'DFO'))
+
+
+#VERY low PM 2.5 emitting primary fuels!!! may be too small to even count
+#LFG, NG, OBG, WAT, WH
+otherPMproducingfuelpowerplants <- powerplants %>%
+  filter(PRIM_FUEL %in% c('LFG', 'NG', 'OBG', 'WH'))
+
+
+#BIT plants and 5 other emitting ones
+BIT_and_High_powerplants <- powerplants %>%
+  filter(PRIM_FUEL %in% c('BIT', 'WDS', 'SLW', 'BLQ', 'AB', 'DFO' ))
+
 ```
 
-```{r map power plant data}
-#Create the map
-cluster_map <- leaflet(powerplants) %>% 
- addTiles() %>% 
- addMarkers(
- #clusterOptions = markerClusterOptions(),
- popup = ~PRIM_FUEL
- )
+```{r nc counties}
+#nc counties shapefile
+counties_sf<- st_read(here('Data/Spatial/cb_2018_us_county_20m.shp')) %>% 
+  filter(STATEFP == 37)
 
-cluster_map
+```
+
+```{r map power plant data mapview}
+
+#mapview of BIT powerplants with NC counties
+mapview(
+  BITfuelpowerplants,
+  zcol = 'PRIM_FUEL') +
+  mapview(counties_sf)
+
+#mapview of BIT and pmpowerplants with NC counties
+mapview(BITfuelpowerplants,
+  zcol = 'PRIM_FUEL') +
+  mapview(HighPMfuelpowerplants,
+          zcol = 'PRIM_FUEL') +
+  mapview(counties_sf, col.region = 'grey') 
+
+```
+
+```{r operating or retired}
+#maybe more of a correlation between retired vs operating?
+#not working well yet
+operating_plants <- BIT_and_High_powerplants %>% filter(STATUS == 'OP')
+retired_plants <- BIT_and_High_powerplants %>% filter(STATUS == 'RE')
+
+#retirement_year contains all of the generators that retired in NC as of 
+#Oct 2024 from https://www.eia.gov/electricity/data/eia860m/
+retirement_year <- read.csv(here('Data/retired_generators.csv')) %>% 
+  filter(Plant.State == "NC") %>% 
+  group_by(Plant.Name, Plant.ID, Retirement.Year) %>% 
+  # Keep Retirement.Year as the first, latest unit retirement is considered
+  #retirement year
+  summarise(Retirement.Year = first(Retirement.Year),.groups = "drop")
+
+# Convert PLANT_CODE to integer in retired_plants
+retired_plants <- retired_plants %>%
+  mutate(PLANT_CODE = as.integer(PLANT_CODE)) 
+
+# Perform the join, one plant ENKA is missing retirement year!
+retired_plants <- retired_plants %>%
+  left_join(retirement_year, by = c("PLANT_CODE" = "Plant.ID")) %>% 
+  filter(Retirement.Year >= 2013)
+
+mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
+  mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red') +
+  mapview(counties_sf, col.region = 'grey')
+
+```
+
+```{r visualizing plants by county}
+
+#should merge pm data and then take means by county
+BITfuelpowerplants$COUNTY
+
+BIT_and_High_powerplants$COUNTY
+
 ```
 
 ```{r wrangling CDC data}
@@ -272,5 +364,9 @@ theme4 <- SVI2014_df %>%
 colnames(theme4) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
 
 #mapview(SVI2018_gdb, zcol = "RPL_THEME1") + mapview(powerplants, col.regions = "black") + mapview(pm2.5_sf, cex = "meanPM")
+```
 
+VISUALIZATION
+
+```{r visualizing data}
 ```
