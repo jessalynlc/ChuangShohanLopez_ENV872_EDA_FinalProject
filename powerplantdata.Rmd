@@ -136,11 +136,12 @@ retirement_year <- read.csv(here('Data/retired_generators.csv')) %>%
 
 # Convert PLANT_CODE to integer in retired_plants
 retired_plants <- retired_plants %>%
-  mutate(PLANT_CODE = as.integer(PLANT_CODE))
+  mutate(PLANT_CODE = as.integer(PLANT_CODE)) 
 
 # Perform the join, one plant ENKA is missing retirement year!
 retired_plants <- retired_plants %>%
-  left_join(retirement_year, by = c("PLANT_CODE" = "Plant.ID"))
+  left_join(retirement_year, by = c("PLANT_CODE" = "Plant.ID")) %>% 
+  filter(Retirement.Year >= 2013)
 
 mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
   mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red') +
