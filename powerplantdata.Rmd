@@ -125,6 +125,22 @@ mapview(BITfuelpowerplants,
 operating_plants <- BIT_and_High_powerplants %>% filter(STATUS == 'OP')
 retired_plants <- BIT_and_High_powerplants %>% filter(STATUS == 'RE')
 
+#retirement_year contains all of the generators that retired in NC as of 
+#Oct 2024 from https://www.eia.gov/electricity/data/eia860m/
+retirement_year <- read.csv(here('Data/retired_generators.csv')) %>% 
+  filter(Plant.State == "NC") %>% 
+  group_by(Plant.Name, Plant.ID, Retirement.Year) %>% 
+  # Keep Retirement.Year as the first, latest unit retirement is considered
+  #retirement year
+  summarise(Retirement.Year = first(Retirement.Year),.groups = "drop")
+
+# Convert PLANT_CODE to integer in retired_plants
+retired_plants <- retired_plants %>%
+  mutate(PLANT_CODE = as.integer(PLANT_CODE))
+
+# Perform the join, one plant ENKA is missing retirement year!
+retired_plants <- retired_plants %>%
+  left_join(retirement_year, by = c("PLANT_CODE" = "Plant.ID"))
 
 mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
   mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red') +
