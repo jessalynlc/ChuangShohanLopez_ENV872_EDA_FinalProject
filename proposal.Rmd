@@ -285,9 +285,14 @@ mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
 ```{r visualizing plants by county}
 
 #should merge pm data and then take means by county
-BITfuelpowerplants$COUNTY
 
-BIT_and_High_powerplants$COUNTY
+countycount_OP_plants <- operating_plants %>%
+  group_by(COUNTY) %>%
+  summarize(Number_of_Plants = n())
+
+countycount_RE_plants <- retired_plants %>%
+  group_by(COUNTY) %>%
+  summarize(Number_of_Plants = n())
 
 ```
 
