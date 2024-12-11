@@ -9,7 +9,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#hello
+
 library(tidyverse);library(lubridate);library(here)
 library(sf)
 library(leaflet)
@@ -18,6 +18,7 @@ library(mapview)
 library(leafsync) #to display maps next to eachother
 library(rvest)
 library(dataRetrieval)
+library(corrplot)
 
 here()
 ```
@@ -723,38 +724,58 @@ combined_data <- combined_data %>%
 ```
 
 ```{r Linear Regression}
-#run linear regression on years 2014, 2016, 2018, 2020, and 2022 using PM2.5
-#as independent variable and SVI measures as explanatory variables
-
-mlt.lin.reg2014 <- lm(data = combined_2014, `Daily Mean PM2.5 Concentration` ~ 
-                        SPL_THEME1 + SPL_THEME2 + SPL_THEME3 + SPL_THEME4)
-
 #Correlation Plots: Exploratory plots of several continuous data points to 
 #determine possible relationships, as well as covariance among explanatory 
 #variables
-library(corrplot)
-combined_2014 <- 
-  combined_2014 %>%
-  select(`Daily Mean PM2.5 Concentration`, SPL_THEME1, SPL_THEME2, SPL_THEME3, 
-         SPL_THEME4) %>%
+combined_selectedcolumns <- 
+  combined_data %>%
+  select(meanPM, theme_agg_value, Number_of_Plants, theme1_value, theme2_value, 
+         theme3_value, them4_value) %>%
   na.omit()
-combined_2014_corplot <- cor(combined_2014)
-corrplot(combined_2014_corplot, method = "ellipse")
-corrplot.mixed(combined_2014_corplot, upper = "ellipse")
+combined_data_corplot <- cor(combined_selectedcolumns)
+corrplot(combined_data_corplot, method = "ellipse")
+
+#Analysis of corrplot: When looking at the Correlation Ellipse Plot, we are looking at (i) the elliptical shape, (ii) the direction/slope of the ellipse, and (iii) the intensity of the ellipse's color to examine pairwise correlations. According to our correlation plot, the strongest correlations across 2014 to 2022 appear for the following variable pairs: (a) the aggregate of all four SVI themes and SVI theme 1, and (b) the aggregate of all four SVI themes and SVI theme 4, since the narrower ellipse shapes and darker ellipse colors suggest a very high correlation among these pairs. This makes sense since SVI theme 1 is one of the four themes that make up the SVI aggregate. Although the elliptical shapes and color intensities suggest strong correlations between the other SVI themes, individually, and the SVI aggregate, it is not as strong as the two pairs of variables first mentioned.
+
+corrplot.mixed(combined_data_corplot, upper = "ellipse")
+
+#Further correlation plot analysis: When looking at the mixed correlation plot, which combines the ellipses with the exact correlation values, we can confirm our prior observations when we see the correlation values for (a) the SVI aggregate and SVI theme 1 and (b) the SVI aggregate and SVI theme 4 are 0.85 and 0.78, respectively.
+
+
+#run linear regression from 2014 to 2022 using PM2.5 as independent variable and 
+#SVI measures and power plant count data as explanatory variables
+
+multi.lin.reg <- lm(data = combined_data, meanPM ~ 
+                        theme_agg_value + Number_of_Plants)
 
 #AIC method to select variables to compute a stepwise regression that either 
 #adds explanatory variables from the bottom up or removes explanatory variables 
 #from a full set of suggested options. The smaller the AIC value, the better.
-step(mlt.lin.reg2014)
+step(multi.lin.reg)
+summary(multi.lin.reg)
 
-#create scatter plots with each of the four themes and compare for each year, 
-#starting with the year 2014
-pm2.5_2014_SVItheme1 <- 
-  ggplot(combined_2014, aes(x = SPL_THEME4, y = `Daily Mean PM2.5 Concentration`)) +
+#Analysis of multi linear regression/AIC: Using the Akaike Information Criterion (AIC) to evaluate the fit of a multiple regression model to our data, we see that the starting AIC value is 50.54. When removing the variable 'theme_agg_value', the AIC increases slightly. After then removing the variable 'Number_of_Plants', the AIC increases slightly once again. Because we want the smallest AIC value, this suggests that the inclusion of both these variables better explains the variation in mean PM2.5.
+
+#However, a very low R^2 value, 0.08383, suggests that despite their inclusion, the SVI aggregate and number of power plants do not explain much of the variance in mean PM2.5 values from 2014 to 2022. Because the model only explains 8.38% of the data, the multi linear regression model may not provide a good fir for our data, and we should look to other factors that might better explain the variance in mean PM2.5 from 2014 to 2022.
+
+#create 2 scatter plots: (i) PM2.5 data vs power plant count data and (ii) PM2.5 data vs SVI aggregate (all from 2014 to 2022)
+#Scatterplot 1
+pm2.5_powerplantcount <- 
+  ggplot(combined_data, aes(x = Number_of_Plants, y = meanPM)) +
   geom_smooth(method = "lm") +
   scale_y_log10() +
   geom_point() 
-print(pm2.5_2014_SVItheme1)
+print(pm2.5_powerplantcount)
+
+#Scatterplot 2
+pm2.5_SVIaggregate <- 
+  ggplot(combined_data, aes(x = theme_agg_value, y = meanPM)) +
+  geom_smooth(method = "lm") +
+  scale_y_log10() +
+  geom_point() 
+print(pm2.5_SVIaggregate)
+
+#Analysis of scatterplots: After plotting the relationships of (i) mean PM2.5 and the number of power plants from 2014 to 2022 and (ii) mean PM2.5 and the SVI aggregate from 2014 to 2022, the resulting scatterplots confirm that there appears to be no significant, or there is a very miniscule, relationship between PM2.5 and each of the number of power plants and the SVI aggregate for the years 2014 to 2022.
 
 ```
 
