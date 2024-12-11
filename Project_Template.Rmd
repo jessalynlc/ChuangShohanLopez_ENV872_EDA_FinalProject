@@ -20,11 +20,17 @@ editor_options:
 # Load your packages
 library(tidyverse); library(lubridate); library(sf); library(leaflet)
 library(mapview); library(leafsync); library(rvest); library(dataRetrieval);
+library(dplyr); library(knitr)
 library(here)
 here()
 # Set your ggplot theme
 
 # Load your datasets
+
+#power plant data set
+powerplants <- st_read('https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/Plants_gdb/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson') %>%
+  filter(STATE == 'NC')
+
 
 
 ```
@@ -79,7 +85,19 @@ North Carolina Counties – May Not Need?
 #tendencies, data source if multiple are used, etc.) - dont include code used 
 #to generate the table
 
-#kable(data, caption = , col.names = c(''), digits = )
+## POWERPLANT SUMMARY AND KABLE 
+powerplants_summary <- data.frame(
+  Variable = c('PLANT_CODE', 'NAME', 'STATE', 'STATUS', 'COUNTY', 'COUNTYFIPS',
+               'PRIM_FUEL', 'LATITUDE', 'LONGITUDE'),
+  Description = c('Power Plant Code ID', 'Name of Power Plant', 'State Plant is 
+  Located', 'Operating Status of Plant', 'County Plant is Located', 'County 
+  FIPS', 'Primary Fuel of Plant', 'Latitude of Plant', 'Longitude of Plant'),
+  Units = c('Character', 'Character', 'Character', 'Character', 'Character',
+            'Character', 'Character', 'Double-precision decimal number', 
+            'Double-precision decimal number')
+)
+
+kable(powerplants_summary, caption = 'NC Power Plant Summary')
 
 
 ```
