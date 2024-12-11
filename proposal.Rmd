@@ -164,8 +164,6 @@ pm2.5_sf_20192020 <- rbind(pm2.5_sf_2019, pm2.5_sf_2020)
 
 pm2.5_sf_20212022 <- rbind(pm2.5_sf_2021, pm2.5_sf_2022)
 
-#hope this works!
-
 ```
 
 https://www.epa.gov/egrid/code-lookup
@@ -521,3 +519,98 @@ map_overall_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions 
 # Synchronize and display the maps side by side
 sync(map_overall_20132014, map_overall_20152016, map_overall_20172018, map_overall_20192020, map_overall_20212022)
 ```
+
+GLMs/Linear Regression
+
+```{r Linear Regression}
+
+#add column titled 'FIPS' to all the PM2.5 data frames combining existing columns
+#titled 'State FIPS Code' and 'County 'FIPS Code', with the goal of then
+#combining with the SVI data frames which have 'FIPS' columns already
+
+pm2.5_2013 <- pm2.5_2013 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2014 <- pm2.5_2014 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2015 <- pm2.5_2015 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2016 <- pm2.5_2016 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2017 <- pm2.5_2017 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2018 <- pm2.5_2018 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2019 <- pm2.5_2019 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2020 <- pm2.5_2020 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2021 <- pm2.5_2021 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2022 <- pm2.5_2022 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+#combine PM2.5 data frames for 2-year averages once again
+
+pm2.5_20132014 <- rbind(pm2.5_2013, pm2.5_2014)
+pm2.5_20152016 <- rbind(pm2.5_2015, pm2.5_2016)
+pm2.5_20172018 <- rbind(pm2.5_2017, pm2.5_2018)
+pm2.5_20192020 <- rbind(pm2.5_2019, pm2.5_2020)
+pm2.5_20212022 <- rbind(pm2.5_2021, pm2.5_2022)
+
+#create data frames for 2-year intervals: 2014, 2016, 2018, 2020, and 2022 
+#(using PM2.5 and SVI data)
+combined_2014 <- merge(pm2.5_20132014, SVI2014_df, by = "FIPS", all = TRUE)
+
+combined_2016 <- merge(pm2.5_20152016, SVI2016_df, by = "FIPS", all = TRUE)
+
+combined_2018 <- merge(pm2.5_20172018, SVI2018_df, by = "FIPS", all = TRUE)
+
+combined_2020 <- merge(pm2.5_20192020, SVI2020_df, by = "FIPS", all = TRUE)
+
+combined_2022 <- merge(pm2.5_20212022, SVI2022_df, by = "FIPS", all = TRUE)
+
+#run linear regression on years 2014, 2016, 2018, 2020, and 2022 using PM2.5
+#as independent variable and SVI measures as explanatory variables
+
+mlt.lin.reg2014 <- lm(data = combined_2014, `Daily Mean PM2.5 Concentration` ~ 
+                        SPL_THEME1 + SPL_THEME2 + SPL_THEME3 + SPL_THEME4)
+
+#Correlation Plots: Exploratory plots of several continuous data points to 
+#determine possible relationships, as well as covariance among explanatory 
+#variables
+library(corrplot)
+combined_2014 <- 
+  combined_2014 %>%
+  select(`Daily Mean PM2.5 Concentration`, SPL_THEME1, SPL_THEME2, SPL_THEME3, 
+         SPL_THEME4) %>%
+  na.omit()
+combined_2014_corplot <- cor(combined_2014)
+corrplot(combined_2014_corplot, method = "ellipse")
+corrplot.mixed(combined_2014_corplot, upper = "ellipse")
+
+#AIC method to select variables to compute a stepwise regression that either 
+#adds explanatory variables from the bottom up or removes explanatory variables 
+#from a full set of suggested options. The smaller the AIC value, the better.
+step(mlt.lin.reg2014)
+
+#create scatter plots with each of the four themes and compare for each year, 
+#starting with the year 2014
+pm2.5_2014_SVItheme1 <- 
+  ggplot(combined_2014, aes(x = SPL_THEME4, y = `Daily Mean PM2.5 Concentration`)) +
+  geom_smooth(method = "lm") +
+  scale_y_log10() +
+  geom_point() 
+print(pm2.5_2014_SVItheme1)
+
+
+```
+
