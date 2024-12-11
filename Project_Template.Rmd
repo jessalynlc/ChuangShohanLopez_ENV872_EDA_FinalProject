@@ -1,5 +1,5 @@
 ---
-title: "Project"
+title: "Project_Template"
 author: "Lauren Shohan, Jessalyn Chuang, Alex López"
 output: html_document
 editor_options: 
@@ -16,8 +16,6 @@ editor_options:
 
 ```{r setup, include=FALSE}
 # Set your working directory
-#not working 
-#setwd()
 
 # Load your packages
 library(tidyverse); library(lubridate); library(sf); library(leaflet)
@@ -25,6 +23,7 @@ library(mapview); library(leafsync); library(rvest); library(dataRetrieval)
 library(dplyr); library(knitr); library(corrplot)
 library(here)
 here()
+
 # Set your ggplot theme
 
 
@@ -337,7 +336,7 @@ countycount_RE_plants <- retired_plants %>%
   summarize(Number_of_Plants = n())
 ```
 
-```{r powerplants.operating.or.retired.map, fig.cap= "Operating and Retired NC Plants'}
+```{r powerplants.operating.or.retired.map, fig.cap= 'Operating and Retired NC Plants'}
 mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
   mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red') +
   mapview(NC_counties, col.region = 'grey')
