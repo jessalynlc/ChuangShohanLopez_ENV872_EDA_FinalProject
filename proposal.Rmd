@@ -681,7 +681,7 @@ theme4_long <- theme4 %>%
   pivot_longer(
     cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
     names_to = "year", # Create a new column named 'year' from the wide column headers
-    values_to = "them4_value" # Create a column for the values
+    values_to = "theme4_value" # Create a column for the values
   )
 
 # Ensure the 'year' column is numeric to match pm2.5_all
@@ -730,7 +730,7 @@ combined_data <- combined_data %>%
 combined_selectedcolumns <- 
   combined_data %>%
   select(meanPM, theme_agg_value, Number_of_Plants, theme1_value, theme2_value, 
-         theme3_value, them4_value) %>%
+         theme3_value, theme4_value) %>%
   na.omit()
 combined_data_corplot <- cor(combined_selectedcolumns)
 corrplot(combined_data_corplot, method = "ellipse")
@@ -746,7 +746,8 @@ corrplot.mixed(combined_data_corplot, upper = "ellipse")
 #SVI measures and power plant count data as explanatory variables
 
 multi.lin.reg <- lm(data = combined_data, meanPM ~ 
-                        theme_agg_value + Number_of_Plants)
+                        theme1_value+ theme2_value + theme3_value +
+                      theme4_value + Number_of_Plants)
 
 #AIC method to select variables to compute a stepwise regression that either 
 #adds explanatory variables from the bottom up or removes explanatory variables 
