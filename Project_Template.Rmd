@@ -31,13 +31,48 @@ here()
 
 
 # Rationale and Research Questions
+   This study investigates particulate matter (PM 2.5) air quality data alongside four Social Vulnerability Index (SVI) metrics across North Carolina counties and visually compares their proximity against retired and operating Power Plant locations. Environmental justice is an ever-concerning issue in America, and with the sudden increase in electricity consumption from the rise of data centers, it is important as ever to make sure injustices are not overlooked. The origins of the environmental justice movement stem from Warren County, North Carolina when an Africa-American community was chosen to be the location of a hazardous waste landfill, sparking national conversations about systemic environmental inequities. This historical context is the reason North Carolina was chosen as the area of focus for this research.  
 
+   The study focuses on coal-burning power plants in particular because they are a major source of air pollution, specifically the very dangerous pollutant PM 2.5. PM 2.5 from coal combustion is rich in sulfur dioxide, black carbon, and metals which can enter a human’s lungs and bloodstream leading to conditions such as cancer, asthma, and even premature death. The NIH estimated from a study that for every 1 μg/m3 increase in coal PM 2.5, mortality in the studied regions increased by 1.12%. Given North Carolina’s unsettling environmental justice history, we seek to explore the connections between coal-burning power plants, amounts of PM 2.5 air pollution, and social vulnerability indices to potentially reveal disparities in air quality and publlic health impacts.  
+
+Possible Questions: 
+
+1. Is there a correlation between PM 2.5 concentrations in North Carolina and the proximity of coal-burning power plants? 
+
+    a. Does the air quality improve in counties with retired plants compared to areas with operating plants? 
+
+2. Do counties with higher Social Vulnerability Indexes (SVI) have higher concentrations of PM 2.5? 
+
+    a. Are there more coal-burning powerplants in these counties? 
+
+    b. Are there more clean energy powerplants in lower SVI counties? 
+
+3. Is there a three-way relationship between coal-burning power plants, SVI, and PM 2.5 concentrations in North Carolina? 
 
 
 \newpage
 
 # Dataset Information
+This research consists of X different datasets: Power Plants, North Carolina Retired Generators, SVI Indexes, and Particulate Matter 2.5 Air Quality.  
 
+  
+Power Plants and Retired Generators:  
+  The Power Plant data set was collected from the open data site of the Geospatial Management Office of the U.S. Department of Homeland Security. The shapefile was created for the Homeland Infrastructure Foundation-Level Database and the Energy modeling community at large. This data contains electric power plants around the United States including the following plant types: hydroelectric dams, fossil fuels (coal, natural gas, or oil), nuclear, solar, wind, geothermal, and biomass. The man classifications that are used in this study are plant name, state location of plant, status of plant (Operating or Retired), primary fuel of plant, and geographic location.  
+
+  The GeoJSON option of this data was copied and pasted into R Studio to bring in this dataset. This research narrowed the scope down to plants located in North Carolina. Then, primary fuel was narrowed to narrow out the plants that would not produce PM 2.5. According to EPA’s EGrid information, the abbreviations of plant primary fuel’s that are found within this dataset represent the following: BIT (blast furnace gas), AB (agricultural byproduct), BLQ (black liquor), DFO (distillate fuel oil, light fuel oil, FO2, diesel oil), LFG (landfill gas), NG (natural gas), OBG (digester gas, methane, and other biomass gases), SLW (sludge waste), WDS (wood, wood waste solid), WH (waste heat), SUN (solar), WND (wind), WAT (water), MWH (electricity), and NUC (nuclear). These plants were broken up into four categories: BIT only plants, other relatively moderate PM producing plants (WDS, SLW, BLQ, AB, and DFO), very low PM producing plants (LFG, NG, OBG, and WH), and a combination of BIT plants and the moderately producing PM plants. This last data frame was filtered for operating status of either operating or retired. Then, a second data set was merged to the retired plants data frame to add the column of retirement years. This data set is from U.S. Energy Information Administration ( https://www.eia.gov/electricity/data/eia860m/ ) and contains all generators retired in North Carolina as of October 2024. This was merged into the retired plants data frame by Plant Code and Plant ID. 
+
+
+Social Vulnerability Index: 
+
+ 
+
+Particulate Matter: 
+
+ 
+
+North Carolina Counties – May Not Need? 
+
+ 
 
 ```{r data.summary, echo = FALSE}
 #table that summarizes data structure (variables, units, ranges and/or central
@@ -76,4 +111,10 @@ here()
 \newpage
 
 # References
-<add references here if relevant, otherwise delete this section> 
+1.  "Environmental Justice History." U.S. Department of Energy, www.energy.gov/lm/environmental-justice-history.
+
+2. Doctrow, Brian. "Deaths associated with pollution from coal power plants." National Institutes of Health, 12 Dec. 2023, www.nih.gov/news-events/nih-research-matters/deaths-associated-pollution-coal-power-plants.
+
+3. "EGrid ." Environmental Protection Agency, www.epa.gov/egrid/code-lookup.
+
+
