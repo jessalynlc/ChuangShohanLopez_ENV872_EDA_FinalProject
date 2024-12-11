@@ -372,7 +372,14 @@ theme4 <- SVI2014_df %>%
 
 colnames(theme4) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
 
-#mapview(SVI2018_gdb, zcol = "RPL_THEME1") + mapview(powerplants, col.regions = "black") + mapview(pm2.5_sf, cex = "meanPM")
+theme_agg <- SVI2014_df %>%
+  select(FIPS, RPL_THEMES) %>%
+  inner_join(SVI2016_df %>% select(FIPS, RPL_THEMES), by = "FIPS") %>%
+  inner_join(SVI2018_df %>% select(FIPS, RPL_THEMES), by = "FIPS") %>%
+  inner_join(SVI2020_df %>% select(FIPS, RPL_THEMES), by = "FIPS") %>%
+  inner_join(SVI2022_df %>% select(FIPS, RPL_THEMES), by = "FIPS")
+
+colnames(theme_agg) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
 ```
 
 ##Spatial Visualization
@@ -532,7 +539,7 @@ sync(map_overall_20132014, map_overall_20152016, map_overall_20172018, map_overa
 
 ##GLMs/Linear Regression
 
-```{r Linear Regression}
+```{r Data Wrangling for Linear Regression}
 
 #add column titled 'FIPS' to all the PM2.5 data frames combining existing columns
 #titled 'State FIPS Code' and 'County 'FIPS Code', with the goal of then
@@ -571,31 +578,31 @@ pm2.5_2022 <- pm2.5_2022 %>%
 #combine PM2.5 data frames for 2-year averages once again
 
 pm2.5_20132014 <- rbind(pm2.5_2013, pm2.5_2014) %>% 
-  group_by(`State FIPS Code`, `County FIPS Code`, `County`) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
   summarize(
     meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
     maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
     )
 pm2.5_20152016 <- rbind(pm2.5_2015, pm2.5_2016) %>% 
-  group_by(`State FIPS Code`, `County FIPS Code`, `County`) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
   summarize(
     meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
     maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
     )
 pm2.5_20172018 <- rbind(pm2.5_2017, pm2.5_2018) %>% 
-  group_by(`State FIPS Code`, `County FIPS Code`, `County`) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
   summarize(
     meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
     maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
     )
 pm2.5_20192020 <- rbind(pm2.5_2019, pm2.5_2020) %>% 
-  group_by(`State FIPS Code`, `County FIPS Code`, `County`) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
   summarize(
     meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
     maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
     )
 pm2.5_20212022 <- rbind(pm2.5_2021, pm2.5_2022) %>% 
-  group_by(`State FIPS Code`, `County FIPS Code`, `County`) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
   summarize(
     meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
     maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
@@ -640,18 +647,82 @@ pm2.5_all$Number_of_Plants[37] <- 1
 pm2.5_all$Number_of_Plants[70] <- 1
 pm2.5_all$Number_of_Plants[91] <- 1
 
-#create data frames for 2-year intervals: 2014, 2016, 2018, 2020, and 2022 
-#(using PM2.5 and SVI data)
-combined_2014 <- merge(pm2.5_20132014, SVI2014_df, by = "FIPS", all = TRUE)
+# Reshape theme_agg from wide to long format
+theme_agg_long <- theme_agg %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme_agg_value" # Create a column for the values
+  )
 
-combined_2016 <- merge(pm2.5_20152016, SVI2016_df, by = "FIPS", all = TRUE)
+theme1_long <- theme1 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme1_value" # Create a column for the values
+  )
 
-combined_2018 <- merge(pm2.5_20172018, SVI2018_df, by = "FIPS", all = TRUE)
+theme2_long <- theme2 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme2_value" # Create a column for the values
+  )
 
-combined_2020 <- merge(pm2.5_20192020, SVI2020_df, by = "FIPS", all = TRUE)
+theme3_long <- theme3 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme3_value" # Create a column for the values
+  )
 
-combined_2022 <- merge(pm2.5_20212022, SVI2022_df, by = "FIPS", all = TRUE)
+theme4_long <- theme4 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "them4_value" # Create a column for the values
+  )
 
+# Ensure the 'year' column is numeric to match pm2.5_all
+theme_agg_long$year <- as.numeric(theme2_long$year)
+theme1_long$year <- as.numeric(theme1_long$year)
+theme2_long$year <- as.numeric(theme2_long$year)
+theme3_long$year <- as.numeric(theme3_long$year)
+theme4_long$year <- as.numeric(theme4_long$year)
+
+# Ensure FIPS is consistent in both datasets (character type)
+pm2.5_all$COUNTYFIPS <- as.character(pm2.5_all$COUNTYFIPS)
+theme_agg_long$FIPS <- as.character(theme_agg_long$FIPS)
+theme1_long$FIPS <- as.character(theme1_long$FIPS)
+theme2_long$FIPS <- as.character(theme2_long$FIPS)
+theme3_long$FIPS <- as.character(theme3_long$FIPS)
+theme4_long$FIPS <- as.character(theme4_long$FIPS)
+
+# Rename FIPS in theme dataframes to COUNTYFIPS
+#colnames(theme_agg_long)[colnames(theme_agg_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme1_long)[colnames(theme1_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme2_long)[colnames(theme2_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme3_long)[colnames(theme3_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme4_long)[colnames(theme4_long) == "FIPS"] <- "COUNTYFIPS"
+
+# Merge pm2.5_all with reshaped theme dataframes
+combined_data <- merge(pm2.5_all, theme_agg_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme1_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme2_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme3_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme4_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+
+#cleaning up combined_data
+combined_data <- combined_data %>%
+  select(-c(County_lower, COUNTY, COUNTYFIPS))
+```
+
+```{r Linear Regression}
 #run linear regression on years 2014, 2016, 2018, 2020, and 2022 using PM2.5
 #as independent variable and SVI measures as explanatory variables
 
@@ -685,6 +756,6 @@ pm2.5_2014_SVItheme1 <-
   geom_point() 
 print(pm2.5_2014_SVItheme1)
 
-
 ```
+
 
