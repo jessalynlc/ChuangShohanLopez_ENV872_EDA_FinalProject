@@ -140,7 +140,20 @@ powerplants_summary <- data.frame(
             'Double-precision decimal number')
 )
 
+SVI_summary <- data.frame(
+  Variable = c('FIPS', 'STATE', 'RPL_THEME1', 'RPL_THEME2', 'RPL_THEME3', 
+               'RPL_THEME4','RPL_THEMES'),
+  Description = c('County FIPS Code', 'State', 'Theme 1 Percentile Ranking', 
+                  'Theme 2 Percentile Ranking', 'Theme 3 Percentile Ranking', 
+                  'Theme 4 Percentile Ranking', 
+                  'Overall Summary Ranking Variable'),
+  Units = c('Character', 'Character', 'Double-precision decimal number', 
+            'Double-precision decimal number', 'Double-precision decimal number',
+            'Double-precision decimal number', 'Double-precision decimal number')
+)
+
 kable(powerplants_summary, caption = 'NC Power Plant Summary')
+kable(SVI_summary, caption = 'SVI Data Summary')
 
 
 ```
