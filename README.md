@@ -50,21 +50,23 @@ PM 2.5 Database:
 North Carolina Counties Database:  IF NEEDED 
   - Source: North Carolina Counties Data File
   - Accessed: 11 December 2024 
-  - Description: Contains all the locations and names of North Carolina Counties
+  - Description: Contains all the locations and names of North Carolina Counties.
 >
 
 
 ## Folder structure, file formats, and naming conventions 
 
-<describe the folders contained in the repository, including what type of files they contain>
+<Data Folder: Contains data used in this project. Contains: EPA_PM2.5 folder that contains all the PM2.5 air pollution data, Project_Data folder that contains all the SVI North Carolina data, and retired_generators.csv that contains the years of retirement for NC plants.>
 
-<describe the formats of files for the various purposes contained in the repository>
+<Wrangling Folder: This folder contains some draft verisons of our wrangling process. There is the PM_wrangling rmd file, powerplant_wrangling rmd file, and then our rough draft proposal_draft rmd file>
 
-<describe your file naming conventions>
+<ChuangShohanLopez_FinalProject: There is a RMD file with all the code done for this project and then there is an HTML file named this that can be opened on a web browser. We named this after our three last names.>
 
 ## Metadata
 
 <For each data file in the repository, describe the data contained in each column. Include the column name, a description of the information, the class of data, and any units associated with the data. Create a list or table for each data file.> 
+
+
 
 ## Scripts and code
 
