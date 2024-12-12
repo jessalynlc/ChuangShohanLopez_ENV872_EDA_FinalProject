@@ -26,6 +26,11 @@ library(here)
 here()
 
 # Set your ggplot theme
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "top")
+theme_set(mytheme)
+
 # Load datasets
 
 #NC Counties 
@@ -139,7 +144,9 @@ This research consists of 5 different datasets: Power Plants, North Carolina Ret
  
 
 ## Particulate Matter: 
+  The Particulate Matter (PM2.5) data set was collected from the United States Environmental Protection Agency website’s Outdoor Air Quality Data section (https://www.epa.gov/outdoor-air-quality-data). Using its “Download Daily Data” tool, we queried daily air quality summary statistics for the criteria pollutant PM2.5 by monitor in North Carolina for the years 2013 to 2022. The dataset includes values for Daily Mean PM2.5 Concentration, Daily AQI Value, and Daily Observation Count. 
 
+  Since we are aiming to examine the relationship between PM2.5 pollution, social vulnerability indices, and power plants, we focused on the Daily Mean PM2.5 Concentration values and did not take Daily AQI Value and Daily Observation Count into consideration for the purposes of this study. After importing the EPA’s daily PM2.5 datasets for each of the years from 2013 to 2022 as data frames. We then converted these data frames into spatial data frames by using group_by() and only selecting the columns necessary to visualize and map each year’s PM2.5 data by county in North Carolina. The selected columns were: Site ID, County, Site Latitude, Site Longitude. New columns were also created using summarize() and named meanPM and maxPM, which provided us with the average of the Daily Mean PM2.5 Concentration and the maximum of the Daily Mean PM2.5 Concentration, respectively, for 2013 to 2022. 
  
 
 ## North Carolina Counties:
@@ -562,7 +569,7 @@ map_overall_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions 
 
 ## Figure 6.4
 
-Figure 6.4 is an interactive map of all these maps side by side.
+Figure 6.4 is an interactive map of Mean PM 2.5 data, SVI Index, and Power Plants.
 ```{r COMBINED, echo=FALSE, fig.cap="6.4 Mean PM 2.5, SVI, and Power Plant Map"}
 # Synchronize and display the maps side by side
 
@@ -587,10 +594,6 @@ These findings underscore the complex relationship between air quality and socia
 \newpage
 
 # Analysis
-
-## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
-
-## Question 2: 
 
 ## GLMs/Linear Regression:
 
@@ -786,12 +789,14 @@ combined_selectedcolumns <-
 combined_data_corplot <- cor(combined_selectedcolumns)
 corrplot(combined_data_corplot, method = "ellipse")
 ```
-Figure \@ref(fig:corrplot1) Analysis of corrplot: When looking at the Correlation Ellipse Plot, we are looking at (i) the elliptical shape, (ii) the direction/slope of the ellipse, and (iii) the intensity of the ellipse's color to examine pairwise correlations. According to our correlation plot, the strongest correlations across 2014 to 2022 appear for the following variable pairs: (a) the aggregate of all four SVI themes and SVI theme 1, and (b) the aggregate of all four SVI themes and SVI theme 4, since the narrower ellipse shapes and darker ellipse colors suggest a very high correlation among these pairs. This makes sense since SVI theme 1 is one of the four themes that make up the SVI aggregate. Although the elliptical shapes and color intensities suggest strong correlations between the other SVI themes, individually, and the SVI aggregate, it is not as strong as the two pairs of variables first mentioned.
+Figure \@ref(fig:corrplot1) Analysis of Correlation Plot: 
+When looking at the Correlation Ellipse Plot, we are looking at (i) the elliptical shape, (ii) the direction/slope of the ellipse, and (iii) the intensity of the ellipse's color to examine pairwise correlations. According to our correlation plot, the strongest correlations across 2014 to 2022 appear for the following variable pairs: (a) the aggregate of all four SVI themes and SVI theme 1, and (b) the aggregate of all four SVI themes and SVI theme 4, since the narrower ellipse shapes and darker ellipse colors suggest a very high correlation among these pairs. This makes sense since SVI theme 1 is one of the four themes that make up the SVI aggregate. Although the elliptical shapes and color intensities suggest strong correlations between the other SVI themes, individually, and the SVI aggregate, it is not as strong as the two pairs of variables first mentioned.  
 
 ```{r corrplot2, echo = FALSE, fig.cap = "Mixed Correlation Plot"}
 corrplot.mixed(combined_data_corplot, upper = "ellipse")
 ```
-Figure \@ref(fig:corrplot2) Further correlation plot analysis: When looking at the mixed correlation plot, which combines the ellipses with the exact correlation values, we can confirm our prior observations when we see the correlation values for (a) the SVI aggregate and SVI theme 1 and (b) the SVI aggregate and SVI theme 4 are 0.85 and 0.78, respectively.
+Figure \@ref(fig:corrplot2) Further correlation plot analysis: 
+When looking at the mixed correlation plot, which combines the ellipses with the exact correlation values, we can confirm our prior observations when we see the correlation values for (a) the SVI aggregate and SVI theme 1 and (b) the SVI aggregate and SVI theme 4 are 0.85 and 0.78, respectively. Unfortunately, since the aim of the study is to examine the relationship, if any, between PM2.5 concentration, number of power plants, and SVI indices by county in North Carolina, the results from the correlation plots do not tell us much, if anything, about such a relationship. 
 
 ```{r Linear.Regression.data, include = FALSE}
 #run linear regression from 2014 to 2022 using PM2.5 as independent variable and 
@@ -802,10 +807,8 @@ multi.lin.reg <- lm(data = combined_data, meanPM ~
                       theme4_value + Number_of_Plants)
 ```
 
+AIC method to select variables to compute a stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options. The smaller the AIC value, the better.
 ```{r AIC analysis}
-#AIC method to select variables to compute a stepwise regression that either 
-#adds explanatory variables from the bottom up or removes explanatory variables 
-#from a full set of suggested options. The smaller the AIC value, the better.
 step(multi.lin.reg)
 ```
 
@@ -813,9 +816,10 @@ step(multi.lin.reg)
 summary(multi.lin.reg)
 ```
 
-Analysis of multi linear regression/AIC: Using the Akaike Information Criterion (AIC) to evaluate the fit of a multiple regression model to our data, we see that the starting AIC value is 50.54. When removing the variable 'theme_agg_value', the AIC increases slightly. After then removing the variable 'Number_of_Plants', the AIC increases slightly once again. Because we want the smallest AIC value, this suggests that the inclusion of both these variables better explains the variation in mean PM2.5.
+**Analysis of multi linear regression/AIC:**\
+  The AIC analysis and stepwise regression process aimed to identify the best-fitting linear regression model to potentially predict meanPM by minimizing the AIC value. The initial model included theme1_value, theme2_value, theme3_value, theme4_value, and Number_of_Plants as predictors, with an AIC of 49.31. During the stepwise selection process, it was determined that removing theme3_value resulted in the largest reduction in AIC, improving the value to 47.65. This indicates that them3_value (minority status and language) contributed the least out of the four themes for explaining variance in meanPM. The final model retained theme1_value, theme2_value, theme4_value, and Number_of_Plants as predictors, with an AIC of 47.65.\ 		 
+	The summary of the multiple linear regression model provides more insights in the relationship between meanPM and the potential predictors. The model’s intercept is statistically significant (p<0.001), indicating the baseline value of meanPM when all predictors are zero is about 6.32 micrograms. Among the predictors, theme1_value is statistically significant with a coefficient of –2.6377 (p = 0.0153). This negative relationship suggests that higher values of these index may be associated with lower PM2.5 concentrations. Theme2_value shows a positive coefficient of 1.7538 and approaches significance (p = 0.0611), suggesting a potential positive association with PM2.5 concentrations, though further analysis and/or data may be needed to confirm this. The remaining predictors (theme 3, theme 4, and number of plants) were not statistically significant as their p-values exceeded the 0.05 threshold, suggesting their relationship with meanPM is weaker, less consistent, or even non-existent in the model. The model's overall performance, as indicated by the R-squared value of 0.1445, shows that the predictors collectively explain approximately 14.45% of the variance in meanPM. This relatively low R-squared value suggests there are additional factors influencing PM2.5 concentrations that are not captured by the model. The F-statistic (2.925, p = 0.02115) indicates that the model, as a whole, is statistically significant, meaning the predictors contribute to explaining variations in PM2.5 concentrations to some extent. 
 
-However, a very low R^2 value, 0.08383, suggests that despite their inclusion, the SVI aggregate and number of power plants do not explain much of the variance in mean PM2.5 values from 2014 to 2022. Because the model only explains 8.38% of the data, the multi linear regression model may not provide a good fir for our data, and we should look to other factors that might better explain the variance in mean PM2.5 from 2014 to 2022.
 
 ```{r scatter1, echo = FALSE, fig.cap = "PM 2.5 Data vs Number of Plants Plot"}
 #create 2 scatter plots: (i) PM2.5 data vs power plant count data and (ii) PM2.5 data vs SVI aggregate (all from 2014 to 2022)
@@ -824,7 +828,9 @@ pm2.5_powerplantcount <-
   ggplot(combined_data, aes(x = Number_of_Plants, y = meanPM)) +
   geom_smooth(method = "lm") +
   scale_y_log10() +
-  geom_point() 
+  geom_point() +
+  labs(x = 'Number of Plants', y = 'Mean PM 2.5 (ug/m^3)', title = 
+         'PM 2.5 Data vs Number of Plants Plot')
 print(pm2.5_powerplantcount)
 ```
 
@@ -834,12 +840,14 @@ pm2.5_SVIaggregate <-
   ggplot(combined_data, aes(x = theme_agg_value, y = meanPM)) +
   geom_smooth(method = "lm") +
   scale_y_log10() +
-  geom_point() 
+  geom_point() +
+  labs(x = 'Theme Aggregate Value', y = 'Mean PM 2.5 (ug/m^3)', title = 
+         'PM 2.5 Data vs SVI Aggregate Plot')
 print(pm2.5_SVIaggregate)
 ```
 
 Figure \@ref(fig:scatter1) and Figure \@ref(fig:scatter2): 
-Analysis of scatterplots: After plotting the relationships of (i) mean PM2.5 and the number of power plants from 2014 to 2022 and (ii) mean PM2.5 and the SVI aggregate from 2014 to 2022, the resulting scatterplots confirm that there appears to be no significant, or there is a very miniscule, relationship between PM2.5 and each of the number of power plants and the SVI aggregate for the years 2014 to 2022.
+  Analysis of scatterplots: After plotting the relationships of (i) mean PM2.5 and the number of power plants from 2014 to 2022 and (ii) mean PM2.5 and the SVI aggregate from 2014 to 2022, the resulting scatterplots confirm that there appears to be no significant, or there is a very miniscule, relationship between PM2.5 and each of the number of power plants and the SVI aggregate for the years 2014 to 2022.
 
 # Summary and Conclusions
 
