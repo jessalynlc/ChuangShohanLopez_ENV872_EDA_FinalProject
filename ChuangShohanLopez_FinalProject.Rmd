@@ -7,14 +7,13 @@ output:
     df_print: paged
     toc: true
     fig_caption: yes
+    geometry: margin=2.54cm
+    fontsize: 12pt
+    mainfont: Times New Roman
 subtitle: https://github.com/jessalynlc/ChuangShohanLopez_ENV872_EDA_FinalProject
-geometry: margin=2.54cm
-fontsize: 12pt
-mainfont: Times New Roman
 editor_options:
   chunk_output_type: console
 ---
-
 
 ```{r setup, include=FALSE}
 # Set your working directory
@@ -91,6 +90,7 @@ SVI2022_gdb <- st_read(here('Data/Project_Data/SVI2022_NORTHCAROLINA_COUNTY.gdb'
 - Table \@ref(tab:table3): PM2.5 Summary <br>
 - Table \@ref(tab:table4): Retired Plants Summary <br>
 - Table \@ref(tab:table5): NC Counties Summary <br>
+- Table \@ref(tab:finaltable): Summary of Multiple Linear Regression Model
 
 # List of Figures
 
@@ -125,7 +125,7 @@ SVI2022_gdb <- st_read(here('Data/Project_Data/SVI2022_NORTHCAROLINA_COUNTY.gdb'
 
     b. Are there more clean energy powerplants in lower SVI counties? 
 
-3. Is there a three-way relationship between coal-burning power plants, SVI, and PM 2.5 concentrations in North Carolina? 
+3. Is there a three-way relationship between coal-burning power plants, SVI, and PM 2.5 concentrations in North Carolina? In other words, assuming the null hypothesis that none of the predictors contribute to explaining the variance in PM2.5 concentrations, should we reject or fail to reject the null hypothesis?
 
 # Dataset Information and Wrangling
 This research consists of 5 different datasets: Power Plants, North Carolina Retired Generators, SVI Indexes, and Particulate Matter 2.5 Air Quality.  
@@ -171,14 +171,15 @@ powerplants_summary <- data.frame(
 
 SVI_summary <- data.frame(
   Variable = c('FIPS', 'STATE', 'RPL_THEME1', 'RPL_THEME2', 'RPL_THEME3', 
-               'RPL_THEME4','RPL_THEMES'),
+               'RPL_THEME4','RPL_THEMES', 'geometry'),
   Description = c('County FIPS Code', 'State', 'Theme 1 Percentile Ranking', 
                   'Theme 2 Percentile Ranking', 'Theme 3 Percentile Ranking', 
                   'Theme 4 Percentile Ranking', 
-                  'Overall Summary Ranking Variable'),
+                  'Overall Summary Ranking Variable','Shape'),
   Units = c('Character', 'Character', 'Double-precision decimal number', 
             'Double-precision decimal number', 'Double-precision decimal number',
-            'Double-precision decimal number', 'Double-precision decimal number')
+            'Double-precision decimal number', 'Double-precision decimal number',
+            'sfc_MULTIPOLYGON')
 )
 
 PM2.5_summary <- data.frame(
@@ -596,6 +597,10 @@ These findings underscore the complex relationship between air quality and socia
 
 ## GLMs/Linear Regression:
 
+Null Hypothesis: None of the predictors contribute to explaining the variance in PM2.5 concentrations.
+
+Alternate Hypothesis: At least one of the predictors contributes to explaining the variance in PM2.5 concentrations.
+
 ```{r Data Wrangling for Linear Regression, include= FALSE}
 
 #add column titled 'FIPS' to all the PM2.5 data frames combining existing columns
@@ -815,12 +820,13 @@ step(multi.lin.reg)
 summary(multi.lin.reg)
 ```
 
-**Analysis of multi linear regression/AIC:**\
-  The AIC analysis and stepwise regression process aimed to identify the best-fitting linear regression model to potentially predict meanPM by minimizing the AIC value. The initial model included theme1_value, theme2_value, theme3_value, theme4_value, and Number_of_Plants as predictors, with an AIC of 49.31. During the stepwise selection process, it was determined that removing theme3_value resulted in the largest reduction in AIC, improving the value to 47.65. This indicates that them3_value (minority status and language) contributed the least out of the four themes for explaining variance in meanPM. The final model retained theme1_value, theme2_value, theme4_value, and Number_of_Plants as predictors, with an AIC of 47.65.\ 		 
-	The summary of the multiple linear regression model provides more insights in the relationship between meanPM and the potential predictors. The model’s intercept is statistically significant (p<0.001), indicating the baseline value of meanPM when all predictors are zero is about 6.32 micrograms. Among the predictors, theme1_value is statistically significant with a coefficient of –2.6377 (p = 0.0153). This negative relationship suggests that higher values of these index may be associated with lower PM2.5 concentrations. Theme2_value shows a positive coefficient of 1.7538 and approaches significance (p = 0.0611), suggesting a potential positive association with PM2.5 concentrations, though further analysis and/or data may be needed to confirm this. The remaining predictors (theme 3, theme 4, and number of plants) were not statistically significant as their p-values exceeded the 0.05 threshold, suggesting their relationship with meanPM is weaker, less consistent, or even non-existent in the model. The model's overall performance, as indicated by the R-squared value of 0.1445, shows that the predictors collectively explain approximately 14.45% of the variance in meanPM. This relatively low R-squared value suggests there are additional factors influencing PM2.5 concentrations that are not captured by the model. The F-statistic (2.925, p = 0.02115) indicates that the model, as a whole, is statistically significant, meaning the predictors contribute to explaining variations in PM2.5 concentrations to some extent. 
+**Analysis of multi linear regression/AIC:**
 
+  The AIC analysis and stepwise regression process aimed to identify the best-fitting linear regression model to potentially predict meanPM by minimizing the AIC value. The initial model included theme1_value, theme2_value, theme3_value, theme4_value, and Number_of_Plants as predictors, with an AIC of 49.31. During the stepwise selection process, it was determined that removing theme3_value resulted in the largest reduction in AIC, improving the value to 47.65. This indicates that them3_value (minority status and language) contributed the least out of the four themes for explaining variance in meanPM. The final model retained theme1_value, theme2_value, theme4_value, and Number_of_Plants as predictors, with an AIC of 47.65.
+  
+  The summary of the multiple linear regression model provides more insights in the relationship between meanPM and the potential predictors. The model’s intercept is statistically significant (p<0.001), indicating the baseline value of meanPM when all predictors are zero is about 6.32 micrograms. Among the predictors, theme1_value is statistically significant with a coefficient of –2.6377 (p = 0.0153). This negative relationship suggests that higher values of these index may be associated with lower PM2.5 concentrations. Theme2_value shows a positive coefficient of 1.7538 and approaches significance (p = 0.0611), suggesting a potential positive association with PM2.5 concentrations, though further analysis and/or data may be needed to confirm this. The remaining predictors (theme 3, theme 4, and number of plants) were not statistically significant as their p-values exceeded the 0.05 threshold, suggesting their relationship with meanPM is weaker, less consistent, or even non-existent in the model. The model's overall performance, as indicated by the R-squared value of 0.1445, shows that the predictors collectively explain approximately 14.45% of the variance in meanPM. This relatively low R-squared value suggests there are additional factors influencing PM2.5 concentrations that are not captured by the model. The F-statistic (2.925, p = 0.02115) indicates that the model, as a whole, is statistically significant, meaning the predictors contribute to explaining variations in PM2.5 concentrations to some extent, and therefore, we can reject the null hypothesis in favor of the alternate hypothesis, which states that at least one of the predictors contributes to explaining the variance in PM2.5 concentrations.
 
-```{r scatter1, echo = FALSE, fig.cap = "PM 2.5 Data vs Number of Plants Plot"}
+```{r scatter1, echo = FALSE, fig.cap = "PM 2.5 Data vs Number of Plants Plot", message = FALSE, warning = FALSE}
 #create 2 scatter plots: (i) PM2.5 data vs power plant count data and (ii) PM2.5 data vs SVI aggregate (all from 2014 to 2022)
 #Scatterplot 1
 pm2.5_powerplantcount <- 
@@ -833,7 +839,7 @@ pm2.5_powerplantcount <-
 print(pm2.5_powerplantcount)
 ```
 
-```{r scatter2, echo = FALSE, fig.cap = "PM 2.5 Data vs SVI Aggregate Plot"}
+```{r scatter2, echo = FALSE, fig.cap = "PM 2.5 Data vs SVI Aggregate Plot", message = FALSE}
 #Scatterplot 2
 pm2.5_SVIaggregate <- 
   ggplot(combined_data, aes(x = theme_agg_value, y = meanPM)) +
@@ -849,6 +855,32 @@ Figure \@ref(fig:scatter1) and Figure \@ref(fig:scatter2):\
   Analysis of scatterplots: After plotting the relationships of (i) mean PM2.5 and the number of power plants from 2014 to 2022 and (ii) mean PM2.5 and the SVI aggregate from 2014 to 2022, the resulting scatterplots confirm that there appears to be no significant, or there is a very miniscule, relationship between PM2.5 and each of the number of power plants and the SVI aggregate for the years 2014 to 2022.
 
 # Summary and Conclusions
+
+
+This study investigates the relationship between PM2.5 air pollution, SVI metrics, and coal-burning power plants across North Carolina, a state with a significant history of environmental justice issues. Using datasets on power plants, SVI, and air quality from 2013 to 2022, the research explores disparities in air quality and public health impacts, highlighting the intersections of environmental and social factors.
+
+Key findings from spatial visualization include:
+
+1. PM2.5 concentrations have generally declined statewide over the years, reflecting efforts to reduce pollution. However, western counties near operating power plants often show persistently higher concentrations.
+
+2. Counties with higher SVI scores, predominantly in the eastern region, often coincide with historically underserved communities. These areas frequently lack sufficient air quality monitoring, which may obscure potential risks and limited our ability to fully analyze relationships due to the scarcity of PM2.5 monitors.
+
+3. Retired coal plants, which are the largest contributors to PM2.5 pollution, have led to noticeable improvements in air quality in nearby counties.
+
+4. Certain counties, like Cleveland and Mecklenburg, showed worsening social vulnerability alongside air quality challenges, underscoring localized disparities.
+
+  Further statistical analysis was done to examine relationships between the PM2.5, SVI, and power plant locations in NC. Our analyses using GLMs confirmed that while at least one of the SVI themes may contribute to the variance in PM2.5 concentrations in NC, there must be additional factors/variables we did not account for in this study that better explain the variance in PM2.5 concentrations across North Carolina’s counties. Despite a statistically significant F-statistic for the overall multi regression model, the R-squared value is quite low. Additionally, the correlation plots and scatter plots confirmed the lack of a strong relationship (i) between PM2.5 concentrations and the explanatory variables collectively and (ii) between PM2.5 concentrations and each of the explanatory variables, individually.
+
+```{r finaltable, echo=FALSE}
+variable <- c("Theme 1 Index", "Theme 2 Index", "Theme 3 Index", "Theme 4 Index",
+              "Number of Plants")
+Tau <- c(-2.509, 1.914, 0.553, 1.366, 1.432)
+P <- c("=< 0.0153","=< 0.0611", "=< 0.5824", "=< 0.1778", "=< 0.1581")
+finaltable <- data.frame(variable, Tau, P)
+colnames(finaltable) <- c("Variable", "Tau value", "P-value")
+  
+knitr::kable(finaltable, caption ="List of tau values and p-values from the multiple linear regression model.")
+```
 
 # References
 1.  "Environmental Justice History." U.S. Department of Energy, www.energy.gov/lm/environmental-justice-history.
