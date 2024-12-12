@@ -1,8 +1,11 @@
 ---
-title: "Project_Template"
+title: "North Carolina’s Unsettling PM 2.5 Trajectory: 
+Analyzing Power Plants and EJ Communities "
 author: "Lauren Shohan, Jessalyn Chuang, Alex López"
-output: html_document
-editor_options: 
+output:
+  html_document:
+    toc: true
+editor_options:
   chunk_output_type: console
 ---
 
@@ -16,7 +19,6 @@ editor_options:
 
 ```{r setup, include=FALSE}
 # Set your working directory
-
 # Load your packages
 library(tidyverse); library(lubridate); library(sf); library(leaflet)
 library(mapview); library(leafsync); library(rvest); library(dataRetrieval)
@@ -25,8 +27,6 @@ library(here)
 here()
 
 # Set your ggplot theme
-
-
 # Load datasets
 
 #NC Counties 
@@ -102,7 +102,7 @@ Possible Questions:
 \newpage
 
 # Dataset Information
-This research consists of X different datasets: Power Plants, North Carolina Retired Generators, SVI Indexes, and Particulate Matter 2.5 Air Quality.  
+This research consists of 5 different datasets: Power Plants, North Carolina Retired Generators, SVI Indexes, and Particulate Matter 2.5 Air Quality.  
 
   
 Power Plants and Retired Generators:  
@@ -112,21 +112,24 @@ Power Plants and Retired Generators:
 
 
 Social Vulnerability Index: 
+  The CDC's Social Vulnerability Index (SVI) dataset provides bi-annual data on indices that measure social vulnerability. These indices are organized into four key themes, each representing the average of various indicators: Theme 1 (Socioeconomic Status), Theme 2 (Household Composition and Disability), Theme 3 (Minority Status and Language), and Theme 4 (Housing Type and Transportation). Additionally, the dataset includes an overall summary ranking variable, which aggregates the values from these themes to provide a comprehensive measure of social vulnerability.	 
 
+  Geodatabase data was pulled from the CDC website (https://www.atsdr.cdc.gov/place-health/php/svi/svi-data-documentation-download.html) in order to retain spatial information for mapping. There was an issue with importing 2014 geodatabase (GDB) data, so 2014 data was imported first as a CSV file. Data was filtered to include only counties in North Carolina (using STATEFP == 37). A join was performed between the NC Counties spatial data frame and the 2014 SVI data using the GEOID column from the spatial data and the FIPS column from the SVI data. Subsequently, SVI data for North Carolina counties from 2016, 2018, 2020, and 2022 were read as geodatabases as these were able to work straight from the website. To have dataframes that also allowed for GLM and linear regression analysis, additional non-spatial dataframes for SVI were created by using st_drop_geometry() to drop the spatial component of the SVI data.  
+
+  Next, the code focuses on creating consolidated datasets for analysis. Four separate themes (Theme 1, Theme 2, Theme 3, and Theme 4) and an aggregate measure (RPL_THEMES) are processed by selecting the relevant theme columns from each dataset (2014, 2016, 2018, 2020, and 2022) and performing inner joins using FIPS as the key. The resulting data frames provide a longitudinal view of each theme's values across the years for each county. Column names are updated to reflect the year associated with each column. Finally, the code consolidates the themes and aggregate measures into respective data frames for further analysis, preparing the data for generalized linear model (GLM) analysis or other statistical approaches. 
  
 
 Particulate Matter: 
 
  
 
-North Carolina Counties – May Not Need? 
+North Carolina Counties:
+  The North Carolina Counties dataset was primarily uploaded to incorporate spatial information for the above datasets. This integration enables the mapping of data, which is a critical step for visualization and spatial analysis. This was used for linking the powerplant and SVI data with geographic boundaries, which helped facilitate the creation of maps that visually represent social vulnerability and powerplant locations across North Carolina counties, aiding in identifying spatial patterns. 
 
- 
 
 ```{r data.summary, echo = FALSE}
 #table that summarizes data structure (variables, units, ranges and/or central
-#tendencies, data source if multiple are used, etc.) - dont include code used 
-#to generate the table
+#tendencies, data source if multiple are used, etc.)
 
 ## POWERPLANT SUMMARY AND KABLE 
 powerplants_summary <- data.frame(
@@ -152,8 +155,36 @@ SVI_summary <- data.frame(
             'Double-precision decimal number', 'Double-precision decimal number')
 )
 
+PM2.5_summary <- data.frame(
+  Variable = c('Date', 'Site ID', 'Daily Mean PM2.5 Concentration', 
+               'Local Site Name', 'State', 'County', 'Site Latitude', 
+               'Site Longitude'),
+  Description = c('Date Data was Daten', 'ID Number of Site Location',
+                  'Daily Mean of PM 2.5 Concentration', 'Name of Site',
+                  'State of Site', 'County of Site', 'Site Latitude', 
+                  'Site Longitude'),
+  Units = c('Character', 'Number', 'Number in units of ug/m^3', 'Character',
+            'Character', 'Character', 'Double-precision decimal number', 
+            'Double-precision decimal number')
+)
+
+Retired_plants_summary <- data.frame(
+  Variable = c('Plant.Name', 'Plant.ID', 'Retirement.Year'),
+  Description = c('Name of Plant', 'Plant ID', 'Year Plant Retired'),
+  Units = c('Character','Integer','Integer')
+)
+
+NC_counties_summary <- data.frame(
+  Variable = c('STATEFP', 'COUNTY', 'geometry'),
+  Description = c('State Code, 37 for NC', 'County Name', 'Geometry'),
+  Units = c('Character', 'Character', 'sfc_MULTIPOLYGON')
+  )
+
 kable(powerplants_summary, caption = 'NC Power Plant Summary')
 kable(SVI_summary, caption = 'SVI Data Summary')
+kable(PM2.5_summary, caption = 'PM 2.5 Data Summary')
+kable(Retired_plants_summary, caption = 'Retired Plants Summary')
+kable(NC_counties_summary, caption = 'North Carolina Counties Summary')
 
 
 ```
@@ -308,21 +339,26 @@ BIT_and_High_powerplants <- powerplants %>%
 
 ```
 
-```{r powerplant.mapview, fig.cap='Mapview of NC Coal-burning Power Plants'}
+Below is a map of North Carolina Coal-Burning Power Plants with BIT Primary Fuel Source
+```{r powerplant.mapviewdata, fig.cap='Mapview of NC Coal-burning Power Plants', echo= FALSE}
 #mapview of BIT powerplants with NC counties
 mapview(
   BITfuelpowerplants,
-  zcol = 'PRIM_FUEL') +
-  mapview(NC_counties)
+  zcol = 'PRIM_FUEL',
+  layer.name = 'Primary Fuel') +
+  mapview(NC_counties, col.region = 'grey', legend = FALSE)
 ```
 
-```{r powerplant.mapview2, fig.cap='Mapview of Top 6 PM Emitting Primary Fuel Power Plants in NC'}
+Below is a map of North Carolina Power Plants including BIT plants and 5 other Primary Fuel Types
+(WDS, SLW, BLQ, AB, DFO)
+```{r powerplant.mapview2, fig.cap='Mapview of Top 6 PM Emitting Primary Fuel Power Plants in NC', echo=FALSE}
 #mapview of BIT and pmpowerplants with NC counties
 mapview(BITfuelpowerplants,
-  zcol = 'PRIM_FUEL') +
+  zcol = 'PRIM_FUEL', layer.name = 'Primary Fuel') +
   mapview(HighPMfuelpowerplants,
-          zcol = 'PRIM_FUEL') +
-  mapview(NC_counties, col.region = 'grey') 
+          zcol = 'PRIM_FUEL',
+          layer.name = 'Other Primary Fuels') +
+  mapview(NC_counties, col.region = 'grey', legend = FALSE) 
 ```
 
 ```{r powerplants.operating.or.retired.data, include=FALSE}
@@ -349,10 +385,15 @@ countycount_RE_plants <- retired_plants %>%
   summarize(Number_of_Plants = n())
 ```
 
-```{r powerplants.operating.or.retired.map, fig.cap= 'Operating and Retired NC Plants'}
-mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
-  mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red') +
-  mapview(NC_counties, col.region = 'grey')
+Below is a map of Operating vs. Retired North Carolina Power Plants.
+As shown, all of the retired plants are BIT primary fuel plants, showing that
+the highest PM emitting plants are being retired over other types. 
+```{r powerplants.operating.or.retired.map, fig.cap= 'Operating and Retired NC Plants', echo=FALSE}
+mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue',
+        layer.name = 'Operating Plants: Primary Fuel') +
+  mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red',
+          layer.name = 'Retired Plants: Primary Fuel') +
+  mapview(NC_counties, col.region = 'grey', legend = FALSE)
 
 #can see alot of retired ones are BIT 
 ```
@@ -419,54 +460,319 @@ theme_agg <- SVI2014_df %>%
 colnames(theme_agg) <- c("FIPS", 2014, 2016, 2018, 2020, 2022)
 ```
 
-```{r visualizing data}
+```{r visualizing data, include=FALSE}
+counties_view <- mapview(NC_counties, col.region = 'grey',legend = FALSE)
 
-counties_view <- mapview(NC_counties, col.region = 'grey')
-
-plants_view <- mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue') +
-  mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red')
+plants_view <- mapview(operating_plants, zcol = "PRIM_FUEL", col.region = 'blue',
+                       layer.name = 'Operating Plants') +
+  mapview(retired_plants, zcol = "PRIM_FUEL", col.region = 'red',
+          layer.name = 'Retired Plants')
 
 #Overall percentile visualization
-map_overall_20132014 <- mapview(pm2.5_sf_20132014, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+map_overall_20132014 <- mapview(pm2.5_sf_20132014, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen")),
+                                layer.name = '2013/2014 Mean PM') + 
   mapview(SVI2014_gdb, zcol = "RPL_THEMES", 
-          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+          col.regions = colorRampPalette(c("pink", "orange", "purple")), 
+          layer.name = 'SVI 2014 RPL Theme') + 
   counties_view + plants_view
 
-map_overall_20152016 <- mapview(pm2.5_sf_20152016, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+
+map_overall_20152016 <- mapview(pm2.5_sf_20152016, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen")),
+                                layer.name = '2015/2016 Mean PM') + 
   mapview(SVI2016_gdb, zcol = "RPL_THEMES", 
-          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+          col.regions = colorRampPalette(c("pink", "orange", "purple")),
+          layer.name = 'SVI 2016 RPL Theme') + 
   counties_view + plants_view
 
-map_overall_20172018 <- mapview(pm2.5_sf_20172018, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+map_overall_20172018 <- mapview(pm2.5_sf_20172018, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen")),
+                                layer.name = '2017/2018 Mean PM') + 
   mapview(SVI2018_gdb, zcol = "RPL_THEMES", 
-          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+          col.regions = colorRampPalette(c("pink", "orange", "purple")),
+          layer.name = 'SVI 2018 RPL Theme') + 
   counties_view + plants_view
 
-map_overall_20192020 <- mapview(pm2.5_sf_20192020, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+map_overall_20192020 <- mapview(pm2.5_sf_20192020, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen")),
+                                layer.name = '2019/2020 Mean PM') + 
   mapview(SVI2020_gdb, zcol = "RPL_THEMES", 
-          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+          col.regions = colorRampPalette(c("pink", "orange", "purple")),
+          layer.name = 'SVI 2020 RPL Theme') + 
   counties_view + plants_view
 
-map_overall_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen"))) + 
+map_overall_20212022 <- mapview(pm2.5_sf_20212022, zcol = "meanPM", col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen")),
+                                layer.name = '2021/2022 Mean PM') + 
   mapview(SVI2022_gdb, zcol = "RPL_THEMES", 
-          col.regions = colorRampPalette(c("pink", "orange", "purple"))) + 
+          col.regions = colorRampPalette(c("pink", "orange", "purple")),
+          layer.name = 'SVI 2022 RPL Theme') + 
   counties_view + plants_view
+```
 
+Below is an interactive map of all these maps side by side.
+```{r pm.svi.maps, echo=FALSE}
 # Synchronize and display the maps side by side
 sync(map_overall_20132014, map_overall_20152016, map_overall_20172018, map_overall_20192020, map_overall_20212022)
 ```
 
 \newpage
+These maps provide a visualization of PM2.5 concentration levels and SVI percentiles across North Carolina over several two-year time periods (2013–2014, 2015–2016, 2017–2018, 2019–2020, and 2021–2022). The maps highlight distinct regional trends in both air quality and social vulnerability, illustrating how these factors evolve over time and interact geographically. 
+
+In general, the PM2.5 concentration levels demonstrate a statewide downward trend, with lower concentrations observed in later years compared to earlier periods. However, the western part of the state consistently shows areas with higher PM2.5 concentrations, particularly near counties where operating power plants and other industrial facilities are located. For instance, counties near active BLQ and DFO units in western North Carolina display elevated PM2.5 levels in the earlier years, which may reflect their proximity to emissions sources. 
+
+The SVI percentiles reveal clusters of higher social vulnerability in the eastern part of the state, particularly in counties where PM2.5 monitors are sparse. These areas with higher social vulnerability often overlap with historically underserved communities that may be at greater risk due to a lack of air quality monitoring and mitigation measures. Some western counties, such as Jackson and Swain, show increasing SVI percentiles alongside worsening PM2.5 levels in certain periods. Counties like Cleveland and Mecklenburg reflect notable changes over time. Cleveland County, home to a plant in Shelby, shows increased social vulnerability after 2014, coinciding with higher environmental risks. Mecklenburg County exhibits worsening PM2.5 levels and an increased SVI percentile by 2022. Montgomery County and Halifax County also experience slight increases in PM2.5 levels and SVI values, likely influenced by the presence of nearby industrial units. Interestingly, Hyde County in the eastern region exhibits a rising SVI percentile despite a general reduction in PM2.5 levels over the years, suggesting that social factors driving vulnerability may not be directly linked to air quality improvements. The maps also highlight scale adjustments in PM2.5 measurements, with generally lower concentration levels in later years, reflecting statewide efforts to reduce particulate pollution. 
+
+These findings underscore the complex relationship between air quality and social vulnerability, highlighting the need for targeted interventions in areas facing persistent social and environmental challenges. While the western part of the state, characterized by lower SVI values, appears to have higher PM2.5 concentrations, it is crucial to consider the lack of PM2.5 monitors in the eastern regions where SVI tends to be higher. This monitoring gap may obscure evidence of potentially rising PM2.5 concentrations in areas with higher social vulnerability, underscoring the need for improved air quality surveillance in underserved regions. 
+\newpage
+
 
 # Analysis
-
-
 
 ## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
 
 ## Question 2: 
 
+##GLMs/Linear Regression:
 
+```{r Data Wrangling for Linear Regression, include= FALSE}
+
+#add column titled 'FIPS' to all the PM2.5 data frames combining existing columns
+#titled 'State FIPS Code' and 'County 'FIPS Code', with the goal of then
+#combining with the SVI data frames which have 'FIPS' columns already
+
+pm2.5_2013 <- pm2.5_2013 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`)) 
+
+pm2.5_2014 <- pm2.5_2014 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2015 <- pm2.5_2015 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2016 <- pm2.5_2016 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2017 <- pm2.5_2017 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2018 <- pm2.5_2018 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2019 <- pm2.5_2019 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2020 <- pm2.5_2020 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2021 <- pm2.5_2021 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+pm2.5_2022 <- pm2.5_2022 %>%
+  mutate(FIPS = paste0(`State FIPS Code`, `County FIPS Code`))
+
+#combine PM2.5 data frames for 2-year averages once again
+
+pm2.5_20132014 <- rbind(pm2.5_2013, pm2.5_2014) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    )
+pm2.5_20152016 <- rbind(pm2.5_2015, pm2.5_2016) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    )
+pm2.5_20172018 <- rbind(pm2.5_2017, pm2.5_2018) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    )
+pm2.5_20192020 <- rbind(pm2.5_2019, pm2.5_2020) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    )
+pm2.5_20212022 <- rbind(pm2.5_2021, pm2.5_2022) %>% 
+  group_by(`State FIPS Code`, `County FIPS Code`, `County`, `FIPS`) %>% 
+  summarize(
+    meanPM = mean(`Daily Mean PM2.5 Concentration`,na.rm=T),
+    maxPM = max(`Daily Mean PM2.5 Concentration`,na.rm=T)
+    )
+#add year labels to each data frame
+pm2.5_20132014$year <- 2014
+pm2.5_20152016$year <- 2016
+pm2.5_20172018$year <- 2018
+pm2.5_20192020$year <- 2020
+pm2.5_20212022$year <- 2022
+#combine the data frames into one
+pm2.5_all <- rbind(pm2.5_20132014, pm2.5_20152016, pm2.5_20172018, 
+                   pm2.5_20192020, pm2.5_20212022)
+#merge operating plant counts
+pm2.5_all <- pm2.5_all %>%
+  mutate(County_lower = tolower(`County`))  # Add a temporary lowercase column
+pm2.5_all <- pm2.5_all %>%
+   left_join(
+    countycount_OP_plants %>% mutate(COUNTY_lower = tolower(COUNTY)),
+    by = c("County_lower" = "COUNTY_lower"))
+
+#Based on countycount_RE_plants df
+#for Chatham (add 4 for 2014)
+pm2.5_all$Number_of_Plants[6] <- 4
+
+#for New Hanover (add 8 for 2014, add 4 for 2016 and 2018)
+pm2.5_all$Number_of_Plants[26] <- 8
+pm2.5_all$Number_of_Plants[57] <- 4
+pm2.5_all$Number_of_Plants[81] <- 4
+
+#for Gaston (add 4 for 2014)
+pm2.5_all$Number_of_Plants[13] <- pm2.5_all$Number_of_Plants[13] + 4
+
+#for Bladen (add 1 for 2014, 2016, 2018) - no PM2.5 monitor so did not add
+
+#for Edgecombe (add 1 for 2014, 2016, 2018, 2020)
+pm2.5_all$Number_of_Plants[11] <- 1
+pm2.5_all$Number_of_Plants[37] <- 1
+pm2.5_all$Number_of_Plants[70] <- 1
+pm2.5_all$Number_of_Plants[91] <- 1
+
+# Reshape theme_agg from wide to long format
+theme_agg_long <- theme_agg %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme_agg_value" # Create a column for the values
+  )
+
+theme1_long <- theme1 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme1_value" # Create a column for the values
+  )
+
+theme2_long <- theme2 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme2_value" # Create a column for the values
+  )
+
+theme3_long <- theme3 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme3_value" # Create a column for the values
+  )
+
+theme4_long <- theme4 %>%
+  pivot_longer(
+    cols = -FIPS, # Keep FIPS as is; all other columns (years) will be reshaped
+    names_to = "year", # Create a new column named 'year' from the wide column headers
+    values_to = "theme4_value" # Create a column for the values
+  )
+
+# Ensure the 'year' column is numeric to match pm2.5_all
+theme_agg_long$year <- as.numeric(theme2_long$year)
+theme1_long$year <- as.numeric(theme1_long$year)
+theme2_long$year <- as.numeric(theme2_long$year)
+theme3_long$year <- as.numeric(theme3_long$year)
+theme4_long$year <- as.numeric(theme4_long$year)
+
+# Ensure FIPS is consistent in both datasets (character type)
+pm2.5_all$COUNTYFIPS <- as.character(pm2.5_all$COUNTYFIPS)
+theme_agg_long$FIPS <- as.character(theme_agg_long$FIPS)
+theme1_long$FIPS <- as.character(theme1_long$FIPS)
+theme2_long$FIPS <- as.character(theme2_long$FIPS)
+theme3_long$FIPS <- as.character(theme3_long$FIPS)
+theme4_long$FIPS <- as.character(theme4_long$FIPS)
+
+# Rename FIPS in theme dataframes to COUNTYFIPS
+#colnames(theme_agg_long)[colnames(theme_agg_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme1_long)[colnames(theme1_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme2_long)[colnames(theme2_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme3_long)[colnames(theme3_long) == "FIPS"] <- "COUNTYFIPS"
+#colnames(theme4_long)[colnames(theme4_long) == "FIPS"] <- "COUNTYFIPS"
+
+# Merge pm2.5_all with reshaped theme dataframes
+combined_data <- merge(pm2.5_all, theme_agg_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme1_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme2_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme3_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+combined_data <- merge(combined_data, theme4_long, by = c("FIPS", "year"), 
+                       all.x = TRUE)
+
+#cleaning up combined_data
+combined_data <- combined_data %>%
+  select(-c(County_lower, COUNTY, COUNTYFIPS))
+```
+
+```{r Linear.Regression.Corrplot, echo = FALSE}
+#Correlation Plots: Exploratory plots of several continuous data points to 
+#determine possible relationships, as well as covariance among explanatory 
+#variables
+combined_selectedcolumns <- 
+  combined_data %>%
+  select(meanPM, theme_agg_value, Number_of_Plants, theme1_value, theme2_value, 
+         theme3_value, theme4_value) %>%
+  na.omit()
+combined_data_corplot <- cor(combined_selectedcolumns)
+corrplot(combined_data_corplot, method = "ellipse")
+```
+Figure X : Analysis of corrplot: When looking at the Correlation Ellipse Plot, we are looking at (i) the elliptical shape, (ii) the direction/slope of the ellipse, and (iii) the intensity of the ellipse's color to examine pairwise correlations. According to our correlation plot, the strongest correlations across 2014 to 2022 appear for the following variable pairs: (a) the aggregate of all four SVI themes and SVI theme 1, and (b) the aggregate of all four SVI themes and SVI theme 4, since the narrower ellipse shapes and darker ellipse colors suggest a very high correlation among these pairs. This makes sense since SVI theme 1 is one of the four themes that make up the SVI aggregate. Although the elliptical shapes and color intensities suggest strong correlations between the other SVI themes, individually, and the SVI aggregate, it is not as strong as the two pairs of variables first mentioned.
+
+```{r Linear.Regression.Corrplot.Mixed, echo = FALSE}
+corrplot.mixed(combined_data_corplot, upper = "ellipse")
+```
+Figure X: Further correlation plot analysis: When looking at the mixed correlation plot, which combines the ellipses with the exact correlation values, we can confirm our prior observations when we see the correlation values for (a) the SVI aggregate and SVI theme 1 and (b) the SVI aggregate and SVI theme 4 are 0.85 and 0.78, respectively.
+
+```{r Linear.Regression.data, include = FALSE}
+#run linear regression from 2014 to 2022 using PM2.5 as independent variable and 
+#SVI measures and power plant count data as explanatory variables
+
+multi.lin.reg <- lm(data = combined_data, meanPM ~ 
+                        theme1_value+ theme2_value + theme3_value +
+                      theme4_value + Number_of_Plants)
+
+#AIC method to select variables to compute a stepwise regression that either 
+#adds explanatory variables from the bottom up or removes explanatory variables 
+#from a full set of suggested options. The smaller the AIC value, the better.
+step(multi.lin.reg)
+```
+
+```{r linear.regression.summary}
+summary(multi.lin.reg)
+```
+
+Analysis of multi linear regression/AIC: Using the Akaike Information Criterion (AIC) to evaluate the fit of a multiple regression model to our data, we see that the starting AIC value is 50.54. When removing the variable 'theme_agg_value', the AIC increases slightly. After then removing the variable 'Number_of_Plants', the AIC increases slightly once again. Because we want the smallest AIC value, this suggests that the inclusion of both these variables better explains the variation in mean PM2.5.
+
+However, a very low R^2 value, 0.08383, suggests that despite their inclusion, the SVI aggregate and number of power plants do not explain much of the variance in mean PM2.5 values from 2014 to 2022. Because the model only explains 8.38% of the data, the multi linear regression model may not provide a good fir for our data, and we should look to other factors that might better explain the variance in mean PM2.5 from 2014 to 2022.
+
+```{r scatterplots, echo = FALSE}
+#create 2 scatter plots: (i) PM2.5 data vs power plant count data and (ii) PM2.5 data vs SVI aggregate (all from 2014 to 2022)
+#Scatterplot 1
+pm2.5_powerplantcount <- 
+  ggplot(combined_data, aes(x = Number_of_Plants, y = meanPM)) +
+  geom_smooth(method = "lm") +
+  scale_y_log10() +
+  geom_point() 
+print(pm2.5_powerplantcount)
+
+#Scatterplot 2
+pm2.5_SVIaggregate <- 
+  ggplot(combined_data, aes(x = theme_agg_value, y = meanPM)) +
+  geom_smooth(method = "lm") +
+  scale_y_log10() +
+  geom_point() 
+print(pm2.5_SVIaggregate)
+```
+\newpage
+Figure X and Figure X: 
+Analysis of scatterplots: After plotting the relationships of (i) mean PM2.5 and the number of power plants from 2014 to 2022 and (ii) mean PM2.5 and the SVI aggregate from 2014 to 2022, the resulting scatterplots confirm that there appears to be no significant, or there is a very miniscule, relationship between PM2.5 and each of the number of power plants and the SVI aggregate for the years 2014 to 2022.
 
 
 \newpage
