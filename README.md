@@ -7,17 +7,17 @@
 ## Investigators
 
 <
-Lauren Shohan 
-Affiliation: Duke University Nicholas School of the Environment 
-Contact: lauren.shohan@duke.edu 
+Lauren Shohan:    
+- Affiliation: Duke University Nicholas School of the Environment 
+- Contact: lauren.shohan@duke.edu 
 
-Jessalyn Chuang 
-Affiliation: Duke University Nicholas School of the Environment 
-Contact: jessalyn.chuang@duke.edu 
+Jessalyn Chuang:   
+- Affiliation: Duke University Nicholas School of the Environment 
+- Contact: jessalyn.chuang@duke.edu 
 
-Alex López 
-Affiliation: Duke University Nicholas School of the Environment 
-Contact: alex.lopez@duke.edu 
+Alex López:  
+- Affiliation: Duke University Nicholas School of the Environment 
+- Contact: alex.lopez@duke.edu 
 >
 
 ## Keywords
@@ -43,14 +43,14 @@ Social Vulnerability Index Database:
   - Description: Comprehensive information on the social vulnerability of communities in the United States. It includes rankings based on 15 U.S. Census variables grouped into four themes: Socioeconomic Status, Household Composition & Disability, Minority Status & Language, and Housing Type & Transportation.  
 
 PM 2.5 Database:   
-  - Source: 
+  - Source: United States Environmental Protection Agency website’s Outdoor Air Quality Data section
   - Accessed: 11 December 2024 
-  - Description: 
+  - Description: PM 2.5 summary statistics and daily means across counties in North Carolina. 
 
 North Carolina Counties Database:  IF NEEDED 
-  - Source: 
+  - Source: North Carolina Counties Data File
   - Accessed: 11 December 2024 
-  - Description: 
+  - Description: Contains all the locations and names of North Carolina Counties
 >
 
 

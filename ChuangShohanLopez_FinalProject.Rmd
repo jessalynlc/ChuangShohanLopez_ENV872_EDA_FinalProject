@@ -396,7 +396,7 @@ BIT_and_High_powerplants <- powerplants %>%
 
 ## Figure 6.1
 
-Figure 6.1 is a map of North Carolina Coal-Burning Power Plants with BIT Primary Fuel Source
+Figure 6.1 is a map of North Carolina Coal-Burning Power Plants with BIT Primary Fuel Source.
 ```{r ncbit, fig.cap='6.1 Mapview of NC Coal-burning Power Plants', echo= FALSE}
 #mapview of BIT powerplants with NC counties
 mapview(
@@ -408,8 +408,7 @@ mapview(
 
 ## Figure 6.2
 
-Figure 6.2 is a map of North Carolina Power Plants including BIT plants and 5 other Primary Fuel Types
-(WDS, SLW, BLQ, AB, DFO)
+Figure 6.2 is a map of North Carolina Power Plants including BIT plants and 5 other Primary Fuel Types (WDS, SLW, BLQ, AB, DFO).
 ```{r NC-COAL, fig.cap='6.2 Mapview of Top 6 PM Emitting Primary Fuel Power Plants in NC', echo=FALSE}
 #mapview of BIT and pmpowerplants with NC counties
 mapview(BITfuelpowerplants,
@@ -789,13 +788,13 @@ combined_selectedcolumns <-
 combined_data_corplot <- cor(combined_selectedcolumns)
 corrplot(combined_data_corplot, method = "ellipse")
 ```
-Figure \@ref(fig:corrplot1) Analysis of Correlation Plot: 
+Figure \@ref(fig:corrplot1) Analysis of Correlation Plot:\
 When looking at the Correlation Ellipse Plot, we are looking at (i) the elliptical shape, (ii) the direction/slope of the ellipse, and (iii) the intensity of the ellipse's color to examine pairwise correlations. According to our correlation plot, the strongest correlations across 2014 to 2022 appear for the following variable pairs: (a) the aggregate of all four SVI themes and SVI theme 1, and (b) the aggregate of all four SVI themes and SVI theme 4, since the narrower ellipse shapes and darker ellipse colors suggest a very high correlation among these pairs. This makes sense since SVI theme 1 is one of the four themes that make up the SVI aggregate. Although the elliptical shapes and color intensities suggest strong correlations between the other SVI themes, individually, and the SVI aggregate, it is not as strong as the two pairs of variables first mentioned.  
 
 ```{r corrplot2, echo = FALSE, fig.cap = "Mixed Correlation Plot"}
 corrplot.mixed(combined_data_corplot, upper = "ellipse")
 ```
-Figure \@ref(fig:corrplot2) Further correlation plot analysis: 
+Figure \@ref(fig:corrplot2) Further correlation plot analysis:\
 When looking at the mixed correlation plot, which combines the ellipses with the exact correlation values, we can confirm our prior observations when we see the correlation values for (a) the SVI aggregate and SVI theme 1 and (b) the SVI aggregate and SVI theme 4 are 0.85 and 0.78, respectively. Unfortunately, since the aim of the study is to examine the relationship, if any, between PM2.5 concentration, number of power plants, and SVI indices by county in North Carolina, the results from the correlation plots do not tell us much, if anything, about such a relationship. 
 
 ```{r Linear.Regression.data, include = FALSE}
@@ -807,7 +806,7 @@ multi.lin.reg <- lm(data = combined_data, meanPM ~
                       theme4_value + Number_of_Plants)
 ```
 
-AIC method to select variables to compute a stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options. The smaller the AIC value, the better.
+Using the AIC method to select variables to compute a stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options. The smaller the AIC value, the better.
 ```{r AIC analysis}
 step(multi.lin.reg)
 ```
@@ -846,7 +845,7 @@ pm2.5_SVIaggregate <-
 print(pm2.5_SVIaggregate)
 ```
 
-Figure \@ref(fig:scatter1) and Figure \@ref(fig:scatter2): 
+Figure \@ref(fig:scatter1) and Figure \@ref(fig:scatter2):\
   Analysis of scatterplots: After plotting the relationships of (i) mean PM2.5 and the number of power plants from 2014 to 2022 and (ii) mean PM2.5 and the SVI aggregate from 2014 to 2022, the resulting scatterplots confirm that there appears to be no significant, or there is a very miniscule, relationship between PM2.5 and each of the number of power plants and the SVI aggregate for the years 2014 to 2022.
 
 # Summary and Conclusions
