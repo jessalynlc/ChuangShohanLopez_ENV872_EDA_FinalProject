@@ -28,29 +28,29 @@ Contact: alex.lopez@duke.edu
 
 <
 Power Plant Database:  
-  Source: HIFLD GeoPlatform Power Plants Database 
-  Accessed: 11 December 2024 
-  Description: Nationwide data on electric powerplants around the United States and includes relevant information such as primary fuel type, name, location, operational status, plant ID, and plant name.  
+  - Source: HIFLD GeoPlatform Power Plants Database 
+  - Accessed: 11 December 2024 
+  - Description: Nationwide data on electric powerplants around the United States and includes relevant information such as primary fuel type, name, location, operational status, plant ID, and plant name.  
 
 Retired Plants Database: 
-  Source: EIA Preliminary Monthly Electric Generator Inventory 
-  Accessed: 11 December 2024 
-  Description: This data source offers monthly updates on the status of electric generators in the United States, maintaining a continuous record of newly added, retired, or modified generating units. 
+  - Source: EIA Preliminary Monthly Electric Generator Inventory 
+  - Accessed: 11 December 2024 
+  - Description: This data source offers monthly updates on the status of electric generators in the United States, maintaining a continuous record of newly added, retired, or modified generating units. 
 
 Social Vulnerability Index Database: 
-  Source: CDC/ATSDR Social Vulnerability (CDC/ATSDR or SVI) data 
-  Accessed: 11 December 2024 
-  Description: Comprehensive information on the social vulnerability of communities in the United States. It includes rankings based on 15 U.S. Census variables grouped into four themes: Socioeconomic Status, Household Composition & Disability, Minority Status & Language, and Housing Type & Transportation.  
+  - Source: CDC/ATSDR Social Vulnerability (CDC/ATSDR or SVI) data 
+  - Accessed: 11 December 2024 
+  - Description: Comprehensive information on the social vulnerability of communities in the United States. It includes rankings based on 15 U.S. Census variables grouped into four themes: Socioeconomic Status, Household Composition & Disability, Minority Status & Language, and Housing Type & Transportation.  
 
 PM 2.5 Database:   
-  Source: 
-  Accessed: 11 December 2024 
-  Description: 
+  - Source: 
+  - Accessed: 11 December 2024 
+  - Description: 
 
 North Carolina Counties Database:  IF NEEDED 
-  Source: 
-  Accessed: 11 December 2024 
-  Description: 
+  - Source: 
+  - Accessed: 11 December 2024 
+  - Description: 
 >
 
 
@@ -68,4 +68,4 @@ North Carolina Counties Database:  IF NEEDED
 
 ## Scripts and code
 
-<Not applicable>
+<Not applicable.>
