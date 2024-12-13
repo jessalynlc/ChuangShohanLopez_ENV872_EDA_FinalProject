@@ -47,7 +47,7 @@ PM 2.5 Database:
   - Accessed: 11 December 2024 
   - Description: PM 2.5 summary statistics and daily means across counties in North Carolina. 
 
-North Carolina Counties Database:  IF NEEDED 
+North Carolina Counties Database:
   - Source: North Carolina Counties Data File
   - Accessed: 11 December 2024 
   - Description: Contains all the locations and names of North Carolina Counties.
